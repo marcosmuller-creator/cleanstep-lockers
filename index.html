@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLEANSTEP LOCKERS — Protótipo</title>
+<style>
+/* ══ BASE ══ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;}
+#phone{width:390px;height:844px;background:#F4F6FB;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.45);border:8px solid #111;}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;background:#F4F6FB;}
+.screen.active{display:flex;}
+.screen::-webkit-scrollbar{width:3px;}
+.screen::-webkit-scrollbar-thumb{background:#E8ECF4;border-radius:4px;}
+
+/* ══ MODULE SELECTOR ══ */
+#screen-selector{background:linear-gradient(160deg,#1B3A6B 0%,#0D2247 60%,#071F17 100%);justify-content:space-between;align-items:center;}
+.sel-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px 16px;width:100%;}
+.sel-logo{width:96px;height:96px;background:rgba(255,255,255,.1);border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:20px;border:2px solid rgba(255,255,255,.2);}
+.sel-top h1{font-size:28px;font-weight:900;letter-spacing:1.5px;text-align:center;color:#fff;line-height:1.2;}
+.sel-top h1 span{color:#FFB347;}
+.sel-top p{font-size:13px;color:rgba(255,255,255,.6);text-align:center;margin-top:8px;line-height:1.5;}
+.module-cards{display:flex;flex-direction:column;gap:12px;padding:0 28px 12px;width:100%;}
+.module-card{border-radius:18px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+.module-card:active{transform:scale(.97);}
+.module-card.client{background:linear-gradient(135deg,#FF6B2B,#FF8C42);box-shadow:0 6px 24px rgba(255,107,43,.4);}
+.module-card.provider{background:linear-gradient(135deg,#0E4D3A,#16704F);box-shadow:0 6px 24px rgba(14,77,58,.4);}
+.mc-icon{width:56px;height:56px;background:rgba(255,255,255,.18);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.mc-text h3{font-size:17px;font-weight:800;color:#fff;}
+.mc-text p{font-size:12px;color:rgba(255,255,255,.75);margin-top:3px;}
+.mc-arrow{position:absolute;right:20px;font-size:22px;color:rgba(255,255,255,.5);}
+.sel-footer{padding:16px 28px 24px;text-align:center;}
+.sel-footer span{font-size:11px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.5px;}
+.sel-footer strong{color:rgba(255,255,255,.55);}
+.module-wrap{position:absolute;inset:0;display:none;flex-direction:column;}
+.module-wrap.active{display:flex;}
+#back-to-selector{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:9999;display:none;}
+.back-module-btn{background:rgba(26,26,46,.88);color:#fff;border:none;border-radius:12px 12px 0 0;padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);letter-spacing:.3px;}
+/* ══ CLIENT STYLES ══ */
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --primary:#1B3A6B;
+    --accent:#FF6B2B;
+    --accent2:#FFB347;
+    --bg:#F4F6FB;
+    --white:#FFFFFF;
+    --gray:#8A94A6;
+    --light:#E8ECF4;
+    --green:#27AE60;
+    --red:#E74C3C;
+    --text:#1A1A2E;
+    --radius:16px;
+    --shadow:0 4px 24px rgba(27,58,107,0.13);
+  }
+  body { background:#E0E5EF; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:'Segoe UI',system-ui,sans-serif; }
+  #phone { width:390px; height:844px; background:var(--bg); border-radius:44px; overflow:hidden; position:relative; box-shadow:0 24px 80px rgba(0,0,0,0.35); border:8px solid #111; }
+  .screen { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; display:none; flex-direction:column; background:var(--bg); }
+  .screen.active { display:flex; }
+  /* scrollbar */
+  .screen::-webkit-scrollbar { width:3px; }
+  .screen::-webkit-scrollbar-thumb { background:var(--light); border-radius:4px; }
+
+  /* ── COMPONENTS ── */
+  .topbar { display:flex; align-items:center; padding:52px 20px 16px; background:var(--white); gap:12px; position:sticky; top:0; z-index:10; box-shadow:0 1px 0 var(--light); }
+  .topbar h2 { font-size:17px; font-weight:700; color:var(--text); flex:1; }
+  .back-btn { width:36px; height:36px; border-radius:50%; background:var(--light); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--primary); }
+  .btn { width:100%; padding:16px; border-radius:14px; border:none; font-size:16px; font-weight:700; cursor:pointer; transition:all .2s; }
+  .btn-primary { background:linear-gradient(135deg,var(--accent),#FF8C42); color:#fff; box-shadow:0 4px 16px rgba(255,107,43,.35); }
+  .btn-primary:active { transform:scale(.97); }
+  .btn-outline { background:transparent; border:2px solid var(--primary); color:var(--primary); }
+  .btn-ghost { background:var(--light); color:var(--primary); }
+  .input-group { margin-bottom:14px; }
+  .input-group label { font-size:13px; font-weight:600; color:var(--gray); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+  .input-group input, .input-group textarea { width:100%; padding:14px 16px; border-radius:12px; border:2px solid var(--light); background:var(--white); font-size:15px; color:var(--text); outline:none; transition:border .2s; }
+  .input-group input:focus, .input-group textarea:focus { border-color:var(--primary); }
+  .input-group input.error { border-color:var(--red); }
+  .input-group .err-msg { font-size:12px; color:var(--red); margin-top:4px; display:none; }
+  .input-group.has-error .err-msg { display:block; }
+  .card { background:var(--white); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+  .pill { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; }
+  .pill-green { background:#E8F8EE; color:var(--green); }
+  .pill-orange { background:#FFF0E8; color:var(--accent); }
+  .pill-gray { background:var(--light); color:var(--gray); }
+  .pill-blue { background:#E8EEF8; color:var(--primary); }
+  .bottom-nav { display:flex; background:var(--white); border-top:1px solid var(--light); padding:8px 0 20px; position:sticky; bottom:0; z-index:10; }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:6px 0; }
+  .nav-icon { font-size:22px; }
+  .nav-label { font-size:10px; font-weight:600; color:var(--gray); }
+  .nav-item.active .nav-label { color:var(--accent); }
+  .nav-item.active .nav-icon { filter:none; }
+  .section-title { font-size:13px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; }
+  .divider { height:1px; background:var(--light); margin:16px 0; }
+  .tottec-footer { text-align:center; padding:12px 0 4px; }
+  .tottec-footer span { font-size:11px; color:var(--gray); font-weight:600; letter-spacing:.5px; }
+  .tottec-footer strong { color:var(--primary); }
+
+  /* ── SPLASH ── */
+  #screen-splash { background:linear-gradient(160deg,var(--primary) 0%,#0D2247 100%); color:#fff; justify-content:space-between; }
+  .splash-top { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 32px 20px; }
+  .splash-logo { width:90px; height:90px; background:rgba(255,255,255,.12); border-radius:28px; display:flex; align-items:center; justify-content:center; font-size:42px; margin-bottom:24px; border:2px solid rgba(255,255,255,.2); }
+  .splash-top h1 { font-size:28px; font-weight:900; letter-spacing:1px; text-align:center; line-height:1.2; }
+  .splash-top h1 span { color:var(--accent2); }
+  .splash-top p { font-size:14px; color:rgba(255,255,255,.7); text-align:center; margin-top:10px; line-height:1.6; }
+  .splash-features { display:flex; flex-direction:column; gap:10px; width:100%; margin-top:28px; }
+  .feature-item { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.08); border-radius:12px; padding:12px 16px; }
+  .feature-item span:first-child { font-size:20px; }
+  .feature-item p { font-size:13px; color:rgba(255,255,255,.85); font-weight:500; }
+  .splash-actions { padding:24px 28px 32px; display:flex; flex-direction:column; gap:10px; }
+
+  /* ── LOGIN ── */
+  #screen-login { background:var(--white); }
+  .login-header { padding:52px 28px 24px; background:linear-gradient(160deg,var(--primary),#0D2247); }
+  .login-header h2 { color:#fff; font-size:24px; font-weight:800; margin-top:8px; }
+  .login-header p { color:rgba(255,255,255,.65); font-size:14px; margin-top:4px; }
+  .login-body { padding:28px; flex:1; }
+  .social-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:14px; border-radius:12px; border:2px solid var(--light); background:var(--white); font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px; color:var(--text); }
+  .or-divider { display:flex; align-items:center; gap:10px; margin:16px 0; }
+  .or-divider span { font-size:13px; color:var(--gray); white-space:nowrap; }
+  .or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background:var(--light); }
+  .forgot-link { text-align:right; font-size:13px; color:var(--accent); font-weight:600; cursor:pointer; margin-top:-8px; margin-bottom:16px; }
+
+  /* ── REGISTER ── */
+  .avatar-upload { width:80px; height:80px; border-radius:50%; background:var(--light); display:flex; align-items:center; justify-content:center; font-size:32px; cursor:pointer; border:3px dashed var(--primary); margin:0 auto 20px; position:relative; }
+  .avatar-upload .edit-badge { position:absolute; bottom:0; right:0; background:var(--accent); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid var(--white); }
+
+  /* ── HOME ── */
+  .home-header { background:linear-gradient(160deg,var(--primary),#0D2247); padding:52px 20px 24px; color:#fff; }
+  .home-header-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .home-header h2 { font-size:22px; font-weight:800; margin-top:6px; }
+  .home-header p { font-size:13px; color:rgba(255,255,255,.65); margin-top:2px; }
+  .notif-btn { width:40px; height:40px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; position:relative; cursor:pointer; }
+  .notif-dot { position:absolute; top:8px; right:8px; width:8px; height:8px; background:var(--accent); border-radius:50%; border:2px solid transparent; }
+  .active-order-card { margin:0 20px; margin-top:-20px; background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); border-left:4px solid var(--accent); }
+  .active-order-card .label { font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.5px; }
+  .active-order-card h4 { font-size:15px; font-weight:700; color:var(--text); margin-top:4px; }
+  .progress-bar { height:6px; background:var(--light); border-radius:6px; margin-top:10px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:6px; transition:width .5s; }
+  .service-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 20px; }
+  .service-card { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); cursor:pointer; transition:transform .2s; position:relative; overflow:hidden; }
+  .service-card:active { transform:scale(.97); }
+  .service-card .svc-icon { font-size:32px; margin-bottom:8px; }
+  .service-card h4 { font-size:14px; font-weight:700; color:var(--text); }
+  .service-card p { font-size:12px; color:var(--gray); margin-top:2px; }
+  .service-card .price { font-size:16px; font-weight:800; color:var(--accent); margin-top:8px; }
+  .service-card .tag { position:absolute; top:10px; right:10px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px; }
+
+  /* ── MAP ── */
+  .map-container { position:relative; height:340px; background:#D4E0F0; overflow:hidden; flex-shrink:0; }
+  .map-svg { width:100%; height:100%; }
+  .map-controls { position:absolute; bottom:12px; right:12px; display:flex; flex-direction:column; gap:6px; }
+  .map-ctrl-btn { width:36px; height:36px; background:var(--white); border-radius:10px; border:none; font-size:16px; cursor:pointer; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center; }
+  .filter-row { display:flex; gap:8px; padding:14px 16px; overflow-x:auto; }
+  .filter-row::-webkit-scrollbar { display:none; }
+  .filter-chip { padding:8px 14px; border-radius:20px; border:2px solid var(--light); background:var(--white); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; color:var(--gray); transition:all .2s; flex-shrink:0; }
+  .filter-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .locker-list-item { display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--white); border-radius:var(--radius); margin:0 16px 10px; box-shadow:0 2px 10px rgba(0,0,0,.06); cursor:pointer; transition:all .2s; border:2px solid transparent; }
+  .locker-list-item.selected { border-color:var(--primary); }
+  .locker-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .locker-info { flex:1; }
+  .locker-info h4 { font-size:14px; font-weight:700; color:var(--text); }
+  .locker-info p { font-size:12px; color:var(--gray); margin-top:2px; }
+
+  /* ── PAYMENT ── */
+  .pay-method-tab { display:flex; background:var(--light); border-radius:12px; padding:4px; margin-bottom:20px; }
+  .pay-tab { flex:1; padding:10px; border-radius:10px; text-align:center; font-size:14px; font-weight:600; cursor:pointer; color:var(--gray); transition:all .2s; }
+  .pay-tab.active { background:var(--white); color:var(--primary); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  .qr-box { background:var(--white); border-radius:16px; padding:20px; text-align:center; border:2px solid var(--light); }
+  .qr-img { width:160px; height:160px; background:var(--text); margin:0 auto 12px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; position:relative; overflow:hidden; }
+  .copy-code { background:var(--light); border-radius:10px; padding:10px 14px; font-size:12px; font-family:monospace; color:var(--text); display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
+  .copy-btn { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; }
+  .card-input-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ── PHOTO ── */
+  .photo-preview { background:#1A1A2E; border-radius:16px; height:220px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:rgba(255,255,255,.5); font-size:40px; cursor:pointer; position:relative; overflow:hidden; }
+  .photo-preview p { font-size:13px; color:rgba(255,255,255,.4); }
+  .photo-thumbs { display:flex; gap:8px; margin-top:12px; }
+  .thumb { width:60px; height:60px; border-radius:10px; background:var(--light); display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; border:2px dashed var(--gray); flex-shrink:0; }
+  .thumb.filled { border:2px solid var(--green); background:#E8F8EE; }
+
+  /* ── LOCKER OPEN ── */
+  #screen-locker { background:linear-gradient(160deg,var(--primary),#0D2247); color:#fff; }
+  .locker-anim { width:160px; height:200px; margin:0 auto; position:relative; }
+  .locker-body { width:160px; height:200px; background:linear-gradient(135deg,#2A4A8A,#1B3A6B); border-radius:16px; border:3px solid rgba(255,255,255,.2); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .locker-door { position:absolute; left:0; top:0; width:75px; height:100%; background:linear-gradient(135deg,#3A5A9A,#2A4A8A); border-right:2px solid rgba(255,255,255,.2); transform-origin:left center; transition:transform 1.2s cubic-bezier(.4,0,.2,1); border-radius:0 0 0 14px; }
+  .locker-door.open { transform:perspective(300px) rotateY(-80deg); }
+  .locker-door .handle { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:10px; height:30px; background:rgba(255,255,255,.4); border-radius:5px; }
+  .locker-interior { font-size:36px; }
+  .steps-bar { display:flex; align-items:center; justify-content:center; gap:0; margin:20px 0; }
+  .step-item { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .step-circle { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:rgba(255,255,255,.5); }
+  .step-circle.done { background:var(--green); color:#fff; }
+  .step-circle.active { background:var(--accent); color:#fff; }
+  .step-label { font-size:10px; color:rgba(255,255,255,.5); }
+  .step-label.active { color:#fff; }
+  .step-line { width:40px; height:2px; background:rgba(255,255,255,.15); margin-bottom:14px; }
+  .step-line.done { background:var(--green); }
+
+  /* ── PICKUP CODE ── */
+  .code-box { background:linear-gradient(135deg,var(--primary),#0D2247); border-radius:20px; padding:28px; text-align:center; color:#fff; margin-bottom:16px; }
+  .code-box .code-label { font-size:12px; font-weight:700; color:rgba(255,255,255,.6); letter-spacing:1px; text-transform:uppercase; }
+  .code-box .code { font-size:40px; font-weight:900; letter-spacing:6px; margin-top:8px; }
+  .code-box .code span { color:var(--accent2); }
+  .notif-preview { background:rgba(0,0,0,.7); border-radius:16px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; }
+  .notif-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+
+  /* ── OVERDUE FEE ── */
+  #screen-fee { }
+  .fee-warning { background:linear-gradient(135deg,#FF4444,#CC0000); border-radius:16px; padding:20px; color:#fff; text-align:center; margin-bottom:16px; }
+  .fee-warning .warn-icon { font-size:40px; margin-bottom:8px; }
+  .fee-warning h3 { font-size:18px; font-weight:800; }
+  .fee-warning p { font-size:13px; color:rgba(255,255,255,.8); margin-top:6px; }
+
+  /* ── RATING ── */
+  .stars-row { display:flex; gap:10px; justify-content:center; margin:16px 0; }
+  .star { font-size:40px; cursor:pointer; transition:transform .15s; filter:grayscale(1) opacity(.4); }
+  .star.active { filter:none; transform:scale(1.1); }
+
+  /* ── HISTORY ── */
+  .history-summary { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:0 16px 20px; }
+  .hist-stat { background:var(--white); border-radius:12px; padding:14px 10px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .hist-stat .val { font-size:20px; font-weight:800; color:var(--primary); }
+  .hist-stat .lbl { font-size:11px; color:var(--gray); margin-top:2px; }
+  .order-card { display:flex; align-items:center; gap:12px; background:var(--white); border-radius:var(--radius); padding:14px 16px; margin:0 16px 10px; box-shadow:0 2px 10px rgba(0,0,0,.06); cursor:pointer; }
+  .order-icon-box { width:44px; height:44px; border-radius:12px; background:var(--light); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .order-info { flex:1; }
+  .order-info h4 { font-size:14px; font-weight:700; color:var(--text); }
+  .order-info p { font-size:12px; color:var(--gray); margin-top:2px; }
+  .order-price { font-size:15px; font-weight:800; color:var(--primary); }
+
+  /* ── TIMELINE ── */
+  .timeline { display:flex; flex-direction:column; gap:0; }
+  .tl-item { display:flex; gap:12px; }
+  .tl-left { display:flex; flex-direction:column; align-items:center; }
+  .tl-dot { width:14px; height:14px; border-radius:50%; background:var(--primary); flex-shrink:0; margin-top:3px; }
+  .tl-dot.done { background:var(--green); }
+  .tl-dot.pending { background:var(--light); border:2px solid var(--gray); }
+  .tl-line { width:2px; flex:1; background:var(--light); margin:2px auto; min-height:24px; }
+  .tl-line.done { background:var(--green); }
+  .tl-content { padding-bottom:20px; flex:1; }
+  .tl-content h4 { font-size:14px; font-weight:700; color:var(--text); }
+  .tl-content p { font-size:12px; color:var(--gray); margin-top:2px; }
+
+  /* ── PROFILE ── */
+  .profile-header { background:linear-gradient(160deg,var(--primary),#0D2247); padding:52px 20px 30px; text-align:center; color:#fff; }
+  .avatar-circle { width:80px; height:80px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#fff; margin:0 auto 12px; border:3px solid rgba(255,255,255,.3); }
+  .badge-gold { display:inline-flex; align-items:center; gap:4px; background:rgba(255,179,71,.2); border:1px solid var(--accent2); color:var(--accent2); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; margin-top:6px; }
+  .menu-section { margin:0 16px 6px; }
+  .menu-section h3 { font-size:12px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:.8px; padding:0 4px; margin-bottom:8px; }
+  .menu-item { display:flex; align-items:center; gap:12px; background:var(--white); padding:14px 16px; border-radius:12px; margin-bottom:6px; cursor:pointer; }
+  .menu-item .mi-icon { font-size:20px; width:36px; height:36px; background:var(--light); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .menu-item .mi-label { flex:1; font-size:14px; font-weight:600; color:var(--text); }
+  .menu-item .mi-arrow { color:var(--gray); font-size:16px; }
+  .menu-item .mi-badge { background:var(--accent); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; }
+
+  /* animations */
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn .3s ease both; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+/* ══ PROVIDER STYLES ══ */
+
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --primary:#1B3A6B;
+    --accent:#FF6B2B;
+    --accent2:#FFB347;
+    --bg:#F4F6FB;
+    --white:#FFFFFF;
+    --gray:#8A94A6;
+    --light:#E8ECF4;
+    --green:#27AE60;
+    --red:#E74C3C;
+    --yellow:#F39C12;
+    --text:#1A1A2E;
+    --provider:#0E4D3A;
+    --provider2:#16704F;
+    --radius:16px;
+    --shadow:0 4px 24px rgba(27,58,107,.13);
+  }
+  body{background:#C8D4E8;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;}
+  #phone{width:390px;height:844px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.35);border:8px solid #111;}
+  .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;background:var(--bg);}
+  .screen.active{display:flex;}
+  .screen::-webkit-scrollbar{width:3px;}
+  .screen::-webkit-scrollbar-thumb{background:var(--light);border-radius:4px;}
+
+  /* ── COMPONENTS ── */
+  .topbar{display:flex;align-items:center;padding:52px 20px 16px;background:var(--white);gap:12px;position:sticky;top:0;z-index:10;box-shadow:0 1px 0 var(--light);}
+  .topbar h2{font-size:17px;font-weight:700;color:var(--text);flex:1;}
+  .back-btn{width:36px;height:36px;border-radius:50%;background:var(--light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--primary);flex-shrink:0;}
+  .btn{width:100%;padding:16px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#FF8C42);color:#fff;box-shadow:0 4px 16px rgba(255,107,43,.35);}
+  .btn-provider{background:linear-gradient(135deg,var(--provider),var(--provider2));color:#fff;box-shadow:0 4px 16px rgba(14,77,58,.35);}
+  .btn-outline{background:transparent;border:2px solid var(--provider);color:var(--provider);}
+  .btn-ghost{background:var(--light);color:var(--primary);}
+  .btn:active{transform:scale(.97);}
+  .input-group{margin-bottom:14px;}
+  .input-group label{font-size:13px;font-weight:600;color:var(--gray);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+  .input-group input{width:100%;padding:14px 16px;border-radius:12px;border:2px solid var(--light);background:var(--white);font-size:15px;color:var(--text);outline:none;transition:border .2s;}
+  .input-group input:focus{border-color:var(--provider);}
+  .card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+  .pill-green{background:#E8F8EE;color:var(--green);}
+  .pill-orange{background:#FFF0E8;color:var(--accent);}
+  .pill-yellow{background:#FFF8E0;color:var(--yellow);}
+  .pill-red{background:#FEECEC;color:var(--red);}
+  .pill-blue{background:#E8EEF8;color:var(--primary);}
+  .section-title{font-size:13px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+  .divider{height:1px;background:var(--light);margin:14px 0;}
+  .tottec-footer{text-align:center;padding:10px 0 4px;}
+  .tottec-footer span{font-size:11px;color:var(--gray);font-weight:600;letter-spacing:.5px;}
+  .tottec-footer strong{color:var(--primary);}
+  .bottom-nav{display:flex;background:var(--white);border-top:1px solid var(--light);padding:8px 0 20px;position:sticky;bottom:0;z-index:10;}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;}
+  .nav-icon{font-size:22px;}
+  .nav-label{font-size:10px;font-weight:600;color:var(--gray);}
+
+  /* ── SPLASH ── */
+  #screen-p-splash{background:linear-gradient(160deg,var(--provider) 0%,#071F17 100%);color:#fff;justify-content:space-between;}
+  .p-splash-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px 20px;}
+  .p-splash-logo{width:90px;height:90px;background:rgba(255,255,255,.1);border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:24px;border:2px solid rgba(255,255,255,.2);}
+  .p-splash-top h1{font-size:26px;font-weight:900;letter-spacing:1px;text-align:center;line-height:1.2;}
+  .p-splash-top h1 span{color:var(--accent2);}
+  .p-splash-top p{font-size:13px;color:rgba(255,255,255,.65);text-align:center;margin-top:8px;line-height:1.5;}
+  .splash-badge{background:rgba(255,179,71,.15);border:1px solid rgba(255,179,71,.4);color:var(--accent2);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-top:12px;display:inline-block;}
+
+  /* ── LOGIN ── */
+  .prov-header{padding:52px 28px 28px;background:linear-gradient(160deg,var(--provider),#071F17);}
+  .prov-header h2{color:#fff;font-size:24px;font-weight:800;margin-top:8px;}
+  .prov-header p{color:rgba(255,255,255,.6);font-size:14px;margin-top:4px;}
+
+  /* ── DASHBOARD ── */
+  .dash-header{background:linear-gradient(160deg,var(--provider),#071F17);padding:52px 20px 28px;color:#fff;}
+  .dash-header h2{font-size:22px;font-weight:800;margin-top:6px;}
+  .dash-header p{font-size:13px;color:rgba(255,255,255,.6);margin-top:2px;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 20px;}
+  .stat-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);text-align:center;}
+  .stat-card .sv{font-size:28px;font-weight:900;color:var(--provider);}
+  .stat-card .sl{font-size:12px;color:var(--gray);margin-top:2px;}
+  .stat-card.accent-card{background:linear-gradient(135deg,var(--provider),var(--provider2));color:#fff;}
+  .stat-card.accent-card .sv{color:#fff;}
+  .stat-card.accent-card .sl{color:rgba(255,255,255,.65);}
+  .alert-card{margin:0 16px 16px;background:linear-gradient(135deg,#FFF8E0,#FFFAEB);border:1px solid #FFE082;border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .alert-card .a-icon{font-size:28px;flex-shrink:0;}
+
+  /* ── ROUTE MAP ── */
+  .route-map{position:relative;height:280px;background:#D4E0F0;overflow:hidden;flex-shrink:0;}
+  .route-map svg{width:100%;height:100%;}
+  .route-step-card{display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--radius);padding:14px 16px;margin:0 16px 10px;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;border-left:4px solid transparent;transition:all .2s;}
+  .route-step-card.active-route{border-left-color:var(--green);background:#F5FDF8;}
+  .route-step-card.pending-route{border-left-color:var(--yellow);}
+  .route-step-card.done-route{border-left-color:var(--light);opacity:.7;}
+  .route-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;}
+  .route-info h4{font-size:14px;font-weight:700;color:var(--text);}
+  .route-info p{font-size:12px;color:var(--gray);margin-top:2px;}
+
+  /* ── COLLECT DETAIL ── */
+  .ticket-card{background:linear-gradient(135deg,var(--provider),var(--provider2));border-radius:20px;padding:22px;color:#fff;margin-bottom:16px;}
+  .ticket-card .tk-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;}
+  .ticket-card .tk-code{font-size:32px;font-weight:900;letter-spacing:4px;margin-top:6px;}
+  .ticket-card .tk-code span{color:var(--accent2);}
+  .scan-box{background:var(--text);border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;position:relative;overflow:hidden;}
+  .scan-line{position:absolute;left:10%;right:10%;height:2px;background:rgba(255,107,43,.8);box-shadow:0 0 8px rgba(255,107,43,.8);animation:scanAnim 2s ease-in-out infinite;}
+  @keyframes scanAnim{0%{top:20%}50%{top:75%}100%{top:20%}}
+  .scan-corner{position:absolute;width:20px;height:20px;border-color:var(--accent);border-style:solid;}
+  .scan-corner.tl{top:10px;left:10px;border-width:3px 0 0 3px;border-radius:2px 0 0 0;}
+  .scan-corner.tr{top:10px;right:10px;border-width:3px 3px 0 0;border-radius:0 2px 0 0;}
+  .scan-corner.bl{bottom:10px;left:10px;border-width:0 0 3px 3px;border-radius:0 0 0 2px;}
+  .scan-corner.br{bottom:10px;right:10px;border-width:0 3px 3px 0;border-radius:0 0 2px 0;}
+  .id-card-row{display:flex;align-items:center;gap:12px;background:var(--white);border-radius:12px;padding:14px;border:2px solid var(--light);}
+  .id-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--provider),var(--provider2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;}
+  .provider-badge{background:linear-gradient(135deg,var(--provider),var(--provider2));color:#fff;border-radius:10px;padding:8px 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;}
+
+  /* ── LOCKER OPEN (PROVIDER) ── */
+  .p-locker-body{background:linear-gradient(160deg,var(--provider),#071F17);flex:1;display:flex;flex-direction:column;padding:52px 24px 28px;}
+  .locker-anim-box{width:160px;height:200px;margin:0 auto;position:relative;}
+  .locker-body-anim{width:160px;height:200px;background:linear-gradient(135deg,#1A5C40,#0E4D3A);border-radius:16px;border:3px solid rgba(255,255,255,.2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .locker-door-anim{position:absolute;left:0;top:0;width:75px;height:100%;background:linear-gradient(135deg,#2A7A56,#1A5C40);border-right:2px solid rgba(255,255,255,.2);transform-origin:left center;transition:transform 1.2s cubic-bezier(.4,0,.2,1);border-radius:0 0 0 14px;}
+  .locker-door-anim.open{transform:perspective(300px) rotateY(-80deg);}
+  .locker-door-anim .handle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:10px;height:30px;background:rgba(255,255,255,.4);border-radius:5px;}
+
+  /* ── VERIFY ── */
+  .check-item{display:flex;align-items:center;gap:12px;background:var(--white);border-radius:12px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+  .check-item .ci-box{width:24px;height:24px;border-radius:6px;border:2px solid var(--light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:all .2s;}
+  .check-item.checked .ci-box{background:var(--green);border-color:var(--green);color:#fff;}
+  .check-item p{font-size:14px;font-weight:600;color:var(--text);}
+  .check-item span{font-size:12px;color:var(--gray);}
+
+  /* ── IN SERVICE ── */
+  .service-progress-ring{width:120px;height:120px;position:relative;margin:0 auto;}
+  .ring-svg{transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:var(--light);stroke-width:8;}
+  .ring-fill{fill:none;stroke:var(--provider);stroke-width:8;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1s ease;}
+  .ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+  /* ── DEPOSIT ── */
+  .deposit-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;}
+  .deposit-step .ds-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--provider),var(--provider2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+
+  /* ── HISTORY ── */
+  .prov-order-card{display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--radius);padding:14px 16px;margin:0 16px 10px;box-shadow:0 2px 10px rgba(0,0,0,.06);cursor:pointer;}
+  .prov-icon-box{width:44px;height:44px;border-radius:12px;background:#E8F5EF;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .fade-in{animation:fadeIn .3s ease both}
+
+</style>
+</head>
+<body>
+<div id="phone">
+
+<!-- ════════════════ MODULE SELECTOR ════════════════ -->
+<div id="screen-selector" class="screen active">
+  <div class="sel-top">
+    <div class="sel-logo">👟</div>
+    <h1>CLEANSTEP<br><span>LOCKERS</span></h1>
+    <p>Selecione o módulo para iniciar a demonstração</p>
+  </div>
+  <div class="module-cards">
+    <div class="module-card client" onclick="openModule('client')">
+      <div class="mc-icon">📱</div>
+      <div class="mc-text">
+        <h3>Módulo Cliente</h3>
+        <p>Pedidos, pagamento, retirada e avaliação</p>
+      </div>
+      <div class="mc-arrow">›</div>
+    </div>
+    <div class="module-card provider" onclick="openModule('provider')">
+      <div class="mc-icon">🛠️</div>
+      <div class="mc-text">
+        <h3>Módulo Prestador</h3>
+        <p>Rotas de coleta, vinculação e devolução</p>
+      </div>
+      <div class="mc-arrow">›</div>
+    </div>
+  </div>
+  <div class="sel-footer">
+    <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+  </div>
+</div>
+
+<!-- ════════════════ CLIENT MODULE ════════════════ -->
+<div id="module-client" class="module-wrap">
+<!-- ══════════════════════════════ SPLASH ══════════════════════════════ -->
+<div id="screen-splash" class="screen active">
+  <div class="splash-top">
+    <div class="splash-logo">👟</div>
+    <h1>CLEANSTEP<br><span>LOCKERS</span></h1>
+    <p>Higienização profissional de calçados com praticidade e segurança</p>
+    <div class="splash-features">
+      <div class="feature-item"><span>🔒</span><p>Lockers inteligentes 24h disponíveis</p></div>
+      <div class="feature-item"><span>✨</span><p>Serviços premium de limpeza e restauração</p></div>
+      <div class="feature-item"><span>📍</span><p>Retire quando quiser, onde quiser</p></div>
+    </div>
+  </div>
+  <div class="splash-actions">
+    <button class="btn btn-primary" onclick="go('screen-login')">Entrar na conta</button>
+    <button class="btn btn-ghost" onclick="go('screen-register')">Criar conta gratuita</button>
+    <div class="tottec-footer" style="padding-top:10px">
+      <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ LOGIN ══════════════════════════════ -->
+<div id="screen-login" class="screen">
+  <div class="login-header">
+    <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="go('screen-splash')">←</button>
+    <h2>Bem-vindo de volta</h2>
+    <p>Entre na sua conta CLEANSTEP</p>
+  </div>
+  <div class="login-body">
+    <button class="social-btn" onclick="go('screen-home')">
+      <span style="font-size:18px">G</span> Continuar com Google
+    </button>
+    <button class="social-btn" onclick="go('screen-home')">
+      <span style="font-size:18px">🍎</span> Continuar com Apple
+    </button>
+    <div class="or-divider"><span>ou use seu e-mail</span></div>
+    <div class="input-group" id="ig-email">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com">
+      <span class="err-msg">Preencha o e-mail</span>
+    </div>
+    <div class="input-group" id="ig-pass">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••">
+      <span class="err-msg">Preencha a senha</span>
+    </div>
+    <div class="forgot-link" onclick="go('screen-forgot')">Esqueci minha senha</div>
+    <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--gray)">
+      Não tem conta? <span style="color:var(--accent);font-weight:700;cursor:pointer" onclick="go('screen-register')">Cadastre-se</span>
+    </p>
+    <div class="tottec-footer" style="margin-top:auto;padding-top:20px">
+      <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ FORGOT ══════════════════════════════ -->
+<div id="screen-forgot" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-login')">←</button>
+    <h2>Recuperar senha</h2>
+  </div>
+  <div style="padding:28px;flex:1">
+    <div style="font-size:48px;text-align:center;margin:16px 0">🔑</div>
+    <h3 style="text-align:center;font-size:18px;color:var(--text);margin-bottom:8px">Redefinir senha</h3>
+    <p style="text-align:center;font-size:14px;color:var(--gray);margin-bottom:28px;line-height:1.6">Informe seu e-mail e enviaremos um link para redefinir sua senha.</p>
+    <div class="input-group">
+      <label>E-mail cadastrado</label>
+      <input type="email" placeholder="seu@email.com">
+    </div>
+    <button class="btn btn-primary" onclick="showToast('Link enviado para seu e-mail! 📧')">Enviar link</button>
+    <div class="tottec-footer" style="margin-top:auto;padding-top:32px">
+      <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ REGISTER ══════════════════════════════ -->
+<div id="screen-register" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-splash')">←</button>
+    <h2>Criar conta</h2>
+  </div>
+  <div style="padding:24px 28px;flex:1">
+    <div class="avatar-upload" onclick="showToast('Câmera/galeria disponível no app nativo 📷')">
+      👤<div class="edit-badge">✏️</div>
+    </div>
+    <div class="input-group">
+      <label>Nome completo</label>
+      <input type="text" placeholder="Seu nome">
+    </div>
+    <div class="input-group">
+      <label>Telefone / WhatsApp</label>
+      <input type="tel" placeholder="(11) 99999-9999">
+    </div>
+    <div class="input-group">
+      <label>E-mail</label>
+      <input type="email" placeholder="seu@email.com">
+    </div>
+    <div class="input-group">
+      <label>Senha</label>
+      <input type="password" placeholder="Mínimo 8 caracteres">
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="go('screen-home')">Criar minha conta</button>
+    <div class="tottec-footer" style="padding-top:20px">
+      <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ HOME ══════════════════════════════ -->
+<div id="screen-home" class="screen">
+  <div class="home-header">
+    <div class="home-header-top">
+      <div>
+        <p style="color:rgba(255,255,255,.65);font-size:13px">Olá, Carlos 👋</p>
+        <h2>O que vamos limpar hoje?</h2>
+      </div>
+      <div class="notif-btn" onclick="showToast('Você tem 2 notificações')">
+        🔔<div class="notif-dot"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Active order -->
+  <div class="active-order-card">
+    <div class="label">⚡ Pedido em andamento</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+      <div>
+        <h4>Higienização Premium</h4>
+        <p style="font-size:12px;color:var(--gray)">Locker A-03 · Previsão: hoje 18h</p>
+      </div>
+      <button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:13px" onclick="go('screen-pickup')">Retirar</button>
+    </div>
+    <div class="progress-bar" style="margin-top:12px">
+      <div class="progress-fill" style="width:65%"></div>
+    </div>
+    <p style="font-size:11px;color:var(--gray);margin-top:6px">65% concluído</p>
+  </div>
+  <!-- Services -->
+  <div style="padding:20px 20px 10px">
+    <div class="section-title">Serviços disponíveis</div>
+    <div class="service-grid">
+      <div class="service-card" onclick="selectService('Premium','R$ 89,90')">
+        <div class="tag">⭐ Top</div>
+        <div class="svc-icon">✨</div>
+        <h4>Premium</h4>
+        <p>Limpeza completa + hidratação</p>
+        <div class="price">R$ 89,90</div>
+      </div>
+      <div class="service-card" onclick="selectService('Básica','R$ 39,90')">
+        <div class="svc-icon">🧹</div>
+        <h4>Básica</h4>
+        <p>Limpeza superficial</p>
+        <div class="price">R$ 39,90</div>
+      </div>
+      <div class="service-card" onclick="selectService('Impermeabilização','R$ 59,90')">
+        <div class="svc-icon">🛡️</div>
+        <h4>Impermeabilização</h4>
+        <p>Proteção total</p>
+        <div class="price">R$ 59,90</div>
+      </div>
+      <div class="service-card" onclick="selectService('Restauração','R$ 129,90')">
+        <div class="svc-icon">🔄</div>
+        <h4>Restauração</h4>
+        <p>Renovação completa</p>
+        <div class="price">R$ 129,90</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <div class="section-title">Encontrar locker</div>
+    <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:12px" onclick="go('screen-map')">
+      <span style="font-size:28px">📍</span>
+      <div style="flex:1"><h4 style="font-size:14px;color:var(--text)">Ver lockers próximos</h4><p style="font-size:12px;color:var(--gray)">3 disponíveis a menos de 1km</p></div>
+      <span style="color:var(--gray)">›</span>
+    </div>
+  </div>
+  <div class="tottec-footer">
+    <span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="go('screen-home')"><div class="nav-icon">🏠</div><div class="nav-label" style="color:var(--accent)">Início</div></div>
+    <div class="nav-item" onclick="go('screen-map')"><div class="nav-icon">📍</div><div class="nav-label">Lockers</div></div>
+    <div class="nav-item" onclick="go('screen-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+    <div class="nav-item" onclick="go('screen-profile')"><div class="nav-icon">👤</div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ MAP ══════════════════════════════ -->
+<div id="screen-map" class="screen">
+  <div style="position:relative">
+    <div class="map-container">
+      <svg class="map-svg" viewBox="0 0 390 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- Roads -->
+        <rect width="390" height="340" fill="#D4E0F0"/>
+        <rect x="0" y="80" width="390" height="48" fill="#C2D0E8"/>
+        <rect x="0" y="200" width="390" height="48" fill="#C2D0E8"/>
+        <rect x="80" y="0" width="48" height="340" fill="#C2D0E8"/>
+        <rect x="240" y="0" width="48" height="340" fill="#C2D0E8"/>
+        <!-- Blocks -->
+        <rect x="8" y="8" width="64" height="64" rx="6" fill="#B8CBE0"/>
+        <rect x="136" y="8" width="96" height="64" rx="6" fill="#B8CBE0"/>
+        <rect x="296" y="8" width="86" height="64" rx="6" fill="#B8CBE0"/>
+        <rect x="8" y="136" width="64" height="56" rx="6" fill="#B8CBE0"/>
+        <rect x="136" y="136" width="96" height="56" rx="6" fill="#B8CBE0"/>
+        <rect x="296" y="136" width="86" height="56" rx="6" fill="#B8CBE0"/>
+        <rect x="8" y="256" width="64" height="76" rx="6" fill="#B8CBE0"/>
+        <rect x="136" y="256" width="96" height="76" rx="6" fill="#B8CBE0"/>
+        <rect x="296" y="256" width="86" height="76" rx="6" fill="#B8CBE0"/>
+        <!-- Road labels -->
+        <text x="195" y="110" text-anchor="middle" font-size="10" fill="#8A9AB0" font-family="sans-serif">Av. Principal</text>
+        <text x="195" y="230" text-anchor="middle" font-size="10" fill="#8A9AB0" font-family="sans-serif">Rua das Flores</text>
+        <!-- User position -->
+        <circle cx="185" cy="170" r="14" fill="rgba(27,58,107,0.15)"/>
+        <circle cx="185" cy="170" r="7" fill="#1B3A6B"/>
+        <circle cx="185" cy="170" r="3" fill="white"/>
+        <!-- Locker pins -->
+        <g id="pin1" style="cursor:pointer" onclick="selectLocker(1)">
+          <circle cx="130" cy="60" r="16" fill="#27AE60"/>
+          <text x="130" y="65" text-anchor="middle" font-size="14" fill="white">🔒</text>
+        </g>
+        <g id="pin2" style="cursor:pointer" onclick="selectLocker(2)">
+          <circle cx="310" cy="165" r="16" fill="#27AE60"/>
+          <text x="310" y="170" text-anchor="middle" font-size="14" fill="white">🔒</text>
+        </g>
+        <g id="pin3" style="cursor:pointer" onclick="selectLocker(3)">
+          <circle cx="60" cy="280" r="16" fill="#8A94A6"/>
+          <text x="60" y="285" text-anchor="middle" font-size="14" fill="white">🔒</text>
+        </g>
+        <g id="pin4" style="cursor:pointer" onclick="selectLocker(4)">
+          <circle cx="185" cy="280" r="16" fill="#27AE60"/>
+          <text x="185" y="285" text-anchor="middle" font-size="14" fill="white">🔒</text>
+        </g>
+      </svg>
+      <div class="map-controls">
+        <button class="map-ctrl-btn">＋</button>
+        <button class="map-ctrl-btn">－</button>
+        <button class="map-ctrl-btn" onclick="showToast('Centralizando no mapa')">📍</button>
+      </div>
+      <button class="back-btn" style="position:absolute;top:52px;left:12px;background:var(--white);color:var(--text)" onclick="go('screen-home')">←</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <div class="filter-chip active" onclick="filterLockers(this,'all')">Todos</div>
+    <div class="filter-chip" onclick="filterLockers(this,'available')">Disponíveis</div>
+    <div class="filter-chip" onclick="filterLockers(this,'near')">Próximos</div>
+    <div class="filter-chip" onclick="filterLockers(this,'24h')">Aberto 24h</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding-bottom:8px">
+    <div class="locker-list-item selected" id="li1" onclick="selectLocker(1)">
+      <div class="locker-dot" style="background:var(--green)"></div>
+      <div class="locker-info">
+        <h4>Locker A-03 — Shopping Norte</h4>
+        <p>🕐 Aberto 24h &nbsp;·&nbsp; 2 vagas disponíveis</p>
+      </div>
+      <div style="text-align:right"><span class="pill pill-green">Perto</span><p style="font-size:12px;color:var(--gray);margin-top:4px">320m</p></div>
+    </div>
+    <div class="locker-list-item" id="li2" onclick="selectLocker(2)">
+      <div class="locker-dot" style="background:var(--green)"></div>
+      <div class="locker-info">
+        <h4>Locker B-07 — Metrô Central</h4>
+        <p>🕐 Aberto 24h &nbsp;·&nbsp; 5 vagas disponíveis</p>
+      </div>
+      <div style="text-align:right"><span class="pill pill-blue">Disponível</span><p style="font-size:12px;color:var(--gray);margin-top:4px">780m</p></div>
+    </div>
+    <div class="locker-list-item" id="li3" onclick="selectLocker(3)">
+      <div class="locker-dot" style="background:var(--gray)"></div>
+      <div class="locker-info">
+        <h4>Locker C-02 — Praça das Artes</h4>
+        <p>🕐 Seg–Sex 8h–22h &nbsp;·&nbsp; Lotado</p>
+      </div>
+      <div style="text-align:right"><span class="pill pill-gray">Ocupado</span><p style="font-size:12px;color:var(--gray);margin-top:4px">1.1km</p></div>
+    </div>
+    <div class="locker-list-item" id="li4" onclick="selectLocker(4)">
+      <div class="locker-dot" style="background:var(--green)"></div>
+      <div class="locker-info">
+        <h4>Locker D-01 — Av. Paulista</h4>
+        <p>🕐 Aberto 24h &nbsp;·&nbsp; 3 vagas disponíveis</p>
+      </div>
+      <div style="text-align:right"><span class="pill pill-green">Perto</span><p style="font-size:12px;color:var(--gray);margin-top:4px">1.4km</p></div>
+    </div>
+  </div>
+  <div style="padding:12px 16px">
+    <button class="btn btn-primary" onclick="go('screen-payment')">Selecionar este locker</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="go('screen-home')"><div class="nav-icon">🏠</div><div class="nav-label">Início</div></div>
+    <div class="nav-item active" onclick="go('screen-map')"><div class="nav-icon">📍</div><div class="nav-label" style="color:var(--accent)">Lockers</div></div>
+    <div class="nav-item" onclick="go('screen-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+    <div class="nav-item" onclick="go('screen-profile')"><div class="nav-icon">👤</div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAYMENT ══════════════════════════════ -->
+<div id="screen-payment" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-map')">←</button>
+    <h2>Pagamento</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title">Resumo do pedido</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:14px;color:var(--gray)">Serviço</span><span style="font-size:14px;font-weight:700" id="pay-svc">Higienização Premium</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:14px;color:var(--gray)">Locker</span><span style="font-size:14px;font-weight:700">A-03 · Shopping Norte</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:14px;color:var(--gray)">Prazo</span><span style="font-size:14px;font-weight:700">2–3 dias úteis</span></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:16px;font-weight:700;color:var(--text)">Total</span><span style="font-size:20px;font-weight:900;color:var(--accent)" id="pay-price">R$ 89,90</span></div>
+    </div>
+    <div class="pay-method-tab">
+      <div class="pay-tab active" id="tab-pix" onclick="switchTab('pix')">💸 PIX</div>
+      <div class="pay-tab" id="tab-card" onclick="switchTab('card')">💳 Cartão</div>
+    </div>
+    <!-- PIX -->
+    <div id="pix-panel">
+      <div class="qr-box">
+        <p style="font-size:13px;color:var(--gray);margin-bottom:12px">Escaneie o QR Code ou copie o código</p>
+        <div class="qr-img">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <rect width="140" height="140" fill="#fff"/>
+            <rect x="10" y="10" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+            <rect x="20" y="20" width="30" height="30" fill="#1A1A2E"/>
+            <rect x="80" y="10" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+            <rect x="90" y="20" width="30" height="30" fill="#1A1A2E"/>
+            <rect x="10" y="80" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+            <rect x="20" y="90" width="30" height="30" fill="#1A1A2E"/>
+            <rect x="80" y="80" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="92" y="80" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="104" y="80" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="116" y="80" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="80" y="92" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="104" y="92" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="80" y="104" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="92" y="104" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="116" y="104" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="80" y="116" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="104" y="116" width="8" height="8" fill="#1A1A2E"/>
+            <rect x="116" y="116" width="8" height="8" fill="#1A1A2E"/>
+          </svg>
+        </div>
+        <div class="copy-code">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">00020126580014BR.GOV.BCB.PIX0136cleanstep-uuid5204000053039865802BR</span>
+          <button class="copy-btn" onclick="showToast('Código copiado! ✅')">Copiar</button>
+        </div>
+        <p style="font-size:12px;color:var(--gray);margin-top:10px">⏱ Válido por <strong>30 minutos</strong></p>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="go('screen-photo')">Já paguei</button>
+    </div>
+    <!-- CARD -->
+    <div id="card-panel" style="display:none">
+      <div class="input-group"><label>Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000" maxlength="19"></div>
+      <div class="card-input-row">
+        <div class="input-group"><label>Validade</label><input type="text" placeholder="MM/AA"></div>
+        <div class="input-group"><label>CVV</label><input type="text" placeholder="123" maxlength="3"></div>
+      </div>
+      <div class="input-group"><label>Nome no cartão</label><input type="text" placeholder="NOME SOBRENOME"></div>
+      <button class="btn btn-primary" onclick="go('screen-photo')">Pagar R$ 89,90</button>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ PHOTO ══════════════════════════════ -->
+<div id="screen-photo" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-payment')">←</button>
+    <h2>Fotografar calçado</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--primary)">
+      <p style="font-size:13px;color:var(--gray);line-height:1.6">📸 <strong>Comprovação de estado</strong> — As fotos ficam armazenadas para garantir a integridade do seu calçado antes e depois do serviço.</p>
+    </div>
+    <div class="section-title">Foto principal</div>
+    <div class="photo-preview" id="main-photo" onclick="capturePhoto('main')">
+      <span>📷</span>
+      <p>Toque para fotografar</p>
+    </div>
+    <div style="margin-top:16px">
+      <div class="section-title">Fotos adicionais (até 4)</div>
+      <div class="photo-thumbs">
+        <div class="thumb" id="th1" onclick="capturePhoto(1)">＋</div>
+        <div class="thumb" id="th2" onclick="capturePhoto(2)">＋</div>
+        <div class="thumb" id="th3" onclick="capturePhoto(3)">＋</div>
+        <div class="thumb" id="th4" onclick="capturePhoto(4)">＋</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <p style="font-size:13px;color:var(--gray);line-height:1.6">💡 <strong>Dica:</strong> Fotografe as solas, laterais e qualquer ponto de desgaste ou mancha existente.</p>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-primary" onclick="go('screen-locker')">Confirmar e abrir locker</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ LOCKER OPEN ══════════════════════════════ -->
+<div id="screen-locker" class="screen">
+  <div style="background:linear-gradient(160deg,var(--primary),#0D2247);flex:1;display:flex;flex-direction:column;padding:52px 24px 32px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
+      <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff;flex-shrink:0" onclick="go('screen-photo')">←</button>
+      <h2 style="color:#fff;font-size:18px;font-weight:800">Abertura do Locker</h2>
+    </div>
+    <!-- Steps -->
+    <div class="steps-bar">
+      <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Pagamento</div></div>
+      <div class="step-line done"></div>
+      <div class="step-item"><div class="step-circle done">✓</div><div class="step-label">Fotos</div></div>
+      <div class="step-line done"></div>
+      <div class="step-item"><div class="step-circle active">3</div><div class="step-label active">Locker</div></div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-circle">4</div><div class="step-label">Código</div></div>
+    </div>
+    <!-- Locker animation -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+      <div class="locker-anim">
+        <div class="locker-body">
+          <div class="locker-door" id="locker-door"><div class="handle"></div></div>
+          <div class="locker-interior">👟</div>
+        </div>
+      </div>
+      <p style="color:rgba(255,255,255,.7);font-size:14px;text-align:center" id="locker-status">Pressione o botão para desbloquear</p>
+    </div>
+    <button class="btn btn-primary" style="font-size:17px;padding:18px" id="unlock-btn" onclick="unlockLocker()">🔓 Desbloquear Locker A-03</button>
+    <div style="margin-top:12px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px 16px">
+      <p style="color:rgba(255,255,255,.7);font-size:13px;text-align:center">📍 Locker A-03 · Shopping Norte · Corredor B</p>
+    </div>
+  </div>
+  <div class="tottec-footer" style="background:linear-gradient(160deg,var(--primary),#0D2247);padding-bottom:20px">
+    <span style="color:rgba(255,255,255,.4)">Powered by <strong style="color:rgba(255,255,255,.6)">TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PICKUP CODE ══════════════════════════════ -->
+<div id="screen-pickup-code" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-home')">✕</button>
+    <h2>Código de Retirada</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="code-box">
+      <div class="code-label">Seu código de retirada</div>
+      <div class="code">CL·<span>7429</span></div>
+      <p style="font-size:13px;color:rgba(255,255,255,.65);margin-top:8px">Guarde este código com segurança</p>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:12px">
+        <span style="font-size:28px">📍</span>
+        <div>
+          <h4 style="font-size:14px;font-weight:700">Locker A-03</h4>
+          <p style="font-size:13px;color:var(--gray);margin-top:2px">Shopping Norte · Corredor B, próx. à loja 47</p>
+          <p style="font-size:13px;color:var(--gray);margin-top:4px">⏳ Prazo: <strong style="color:var(--text)">2–3 dias úteis</strong></p>
+          <p style="font-size:13px;color:var(--gray);margin-top:4px">📅 Previsão: <strong style="color:var(--text)">15/06 até 18h</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">Prévia da notificação</div>
+    <div style="background:#1A1A2E;border-radius:16px;padding:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:16px">👟</span>
+        <span style="font-size:12px;color:rgba(255,255,255,.5)">CLEANSTEP LOCKERS · agora</span>
+      </div>
+      <div class="notif-preview">
+        <div class="notif-icon">🎉</div>
+        <div>
+          <p style="font-size:13px;font-weight:700;color:#fff">Seu calçado está pronto!</p>
+          <p style="font-size:12px;color:rgba(255,255,255,.6);margin-top:3px">Higienização Premium concluída. Use o código CL·7429 para retirar no Locker A-03. Retire em até 48h para evitar taxas.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;border-left:4px solid var(--accent)">
+      <p style="font-size:13px;color:var(--gray)">⚠️ <strong>Atenção:</strong> Após a notificação de conclusão, retire em até <strong>48 horas</strong> para evitar cobrança de taxa de permanência.</p>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-primary" onclick="go('screen-pickup')">Ver tela de retirada</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ PICKUP ══════════════════════════════ -->
+<div id="screen-pickup" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-home')">←</button>
+    <h2>Retirar Calçado</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#E8F8EE,#F0FFF4);border:1px solid #A8D8B8">
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:28px">✅</span>
+        <div><h4 style="font-size:15px;color:var(--green)">Higienização concluída!</h4><p style="font-size:13px;color:var(--gray)">Seu calçado está pronto para retirada</p></div>
+      </div>
+    </div>
+    <!-- QR Code -->
+    <div class="qr-box" style="margin-bottom:16px">
+      <p style="font-size:13px;color:var(--gray);margin-bottom:12px">Apresente o QR Code ou o código ao locker</p>
+      <div class="qr-img">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <rect width="140" height="140" fill="#fff"/>
+          <rect x="10" y="10" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+          <rect x="20" y="20" width="30" height="30" fill="#FF6B2B"/>
+          <rect x="80" y="10" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+          <rect x="90" y="20" width="30" height="30" fill="#FF6B2B"/>
+          <rect x="10" y="80" width="50" height="50" fill="none" stroke="#1A1A2E" stroke-width="4"/>
+          <rect x="20" y="90" width="30" height="30" fill="#FF6B2B"/>
+          <rect x="80" y="80" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="96" y="80" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="112" y="80" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="80" y="96" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="112" y="96" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="80" y="112" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="96" y="112" width="8" height="8" fill="#1A1A2E"/>
+          <rect x="112" y="112" width="8" height="8" fill="#1A1A2E"/>
+        </svg>
+      </div>
+      <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:var(--text);margin-top:8px">CL·<span style="color:var(--accent)">7429</span></div>
+    </div>
+    <!-- Steps -->
+    <div class="section-title">Como retirar</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">1</div>
+        <p style="font-size:13px;color:var(--gray);padding-top:4px">Vá até o <strong style="color:var(--text)">Locker A-03</strong> no Shopping Norte, Corredor B</p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">2</div>
+        <p style="font-size:13px;color:var(--gray);padding-top:4px">Escaneie o QR Code ou insira o código <strong style="color:var(--text)">CL·7429</strong> no painel</p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">3</div>
+        <p style="font-size:13px;color:var(--gray);padding-top:4px">Retire seu calçado e confirme a retirada no app</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="go('screen-rating')" style="margin-bottom:10px">🔓 Abrir locker agora</button>
+    <button class="btn btn-ghost" onclick="go('screen-fee')">Simular taxa de atraso</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ OVERDUE FEE ══════════════════════════════ -->
+<div id="screen-fee" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-pickup')">←</button>
+    <h2>Taxa de Permanência</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="fee-warning">
+      <div class="warn-icon">⏰</div>
+      <h3>Prazo de retirada expirado</h3>
+      <p>Seu calçado está no locker há <strong>72 horas</strong> após a conclusão do serviço.</p>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title">Detalhamento da taxa</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:14px;color:var(--gray)">Taxa de permanência (24h)</span><span style="font-size:14px;font-weight:700">R$ 15,00</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:14px;color:var(--gray)">Período adicional (24h)</span><span style="font-size:14px;font-weight:700">R$ 15,00</span></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:16px;font-weight:700">Total a pagar</span><span style="font-size:20px;font-weight:900;color:var(--red)">R$ 30,00</span></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--red);margin-bottom:20px">
+      <p style="font-size:13px;color:var(--gray);line-height:1.6">🔒 O locker <strong>só será desbloqueado</strong> após a confirmação do pagamento da taxa de permanência.</p>
+    </div>
+    <div class="pay-method-tab">
+      <div class="pay-tab active" id="fee-tab-pix" onclick="switchFeeTab('pix')">💸 PIX</div>
+      <div class="pay-tab" id="fee-tab-card" onclick="switchFeeTab('card')">💳 Cartão</div>
+    </div>
+    <div id="fee-pix-panel">
+      <div class="qr-box">
+        <div class="qr-img" style="width:120px;height:120px">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <rect width="110" height="110" fill="#fff"/>
+            <rect x="8" y="8" width="38" height="38" fill="none" stroke="#E74C3C" stroke-width="3"/>
+            <rect x="15" y="15" width="24" height="24" fill="#E74C3C"/>
+            <rect x="64" y="8" width="38" height="38" fill="none" stroke="#E74C3C" stroke-width="3"/>
+            <rect x="71" y="15" width="24" height="24" fill="#E74C3C"/>
+            <rect x="8" y="64" width="38" height="38" fill="none" stroke="#E74C3C" stroke-width="3"/>
+            <rect x="15" y="71" width="24" height="24" fill="#E74C3C"/>
+          </svg>
+        </div>
+        <div class="copy-code" style="margin-top:8px">
+          <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px">00020126580014BR.GOV.BCB.PIX.TAXA</span>
+          <button class="copy-btn" onclick="showToast('Código copiado! ✅')">Copiar</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px;background:linear-gradient(135deg,var(--red),#CC0000)" onclick="showToast('Pagamento confirmado! Abrindo locker...');setTimeout(()=>go('screen-rating'),1500)">Já paguei — abrir locker</button>
+    </div>
+    <div id="fee-card-panel" style="display:none">
+      <div class="input-group"><label>Número do cartão</label><input type="text" placeholder="0000 0000 0000 0000"></div>
+      <button class="btn btn-primary" style="background:linear-gradient(135deg,var(--red),#CC0000)" onclick="showToast('Pagamento confirmado! Abrindo locker...');setTimeout(()=>go('screen-rating'),1500)">Pagar R$ 30,00 e abrir locker</button>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ RATING ══════════════════════════════ -->
+<div id="screen-rating" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div style="font-size:64px;margin-bottom:16px;animation:pulse 1s infinite">🎉</div>
+    <h2 style="font-size:24px;font-weight:800;color:var(--text)">Retirada confirmada!</h2>
+    <p style="font-size:14px;color:var(--gray);margin-top:8px;line-height:1.6">Esperamos que você tenha amado o resultado. Que tal nos avaliar?</p>
+    <div style="background:var(--white);border-radius:20px;padding:24px;width:100%;margin-top:24px;box-shadow:var(--shadow)">
+      <h3 style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">Higienização Premium</h3>
+      <p style="font-size:13px;color:var(--gray)">Locker A-03 · Concluído hoje</p>
+      <div class="stars-row" id="stars-row">
+        <span class="star" onclick="rateStar(1)">⭐</span>
+        <span class="star" onclick="rateStar(2)">⭐</span>
+        <span class="star" onclick="rateStar(3)">⭐</span>
+        <span class="star" onclick="rateStar(4)">⭐</span>
+        <span class="star" onclick="rateStar(5)">⭐</span>
+      </div>
+      <div class="input-group" style="margin-top:12px;text-align:left">
+        <label>Comentário (opcional)</label>
+        <textarea placeholder="Conte sua experiência..." rows="3" style="resize:none;border-radius:12px;border:2px solid var(--light);padding:12px;width:100%;font-size:14px;color:var(--text);outline:none;font-family:inherit"></textarea>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 28px 24px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-primary" onclick="go('screen-home')">Enviar avaliação</button>
+    <button class="btn btn-ghost" onclick="go('screen-home')">Pular</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ HISTORY ══════════════════════════════ -->
+<div id="screen-history" class="screen">
+  <div class="topbar" style="padding-top:52px">
+    <h2 style="flex:1">Histórico</h2>
+  </div>
+  <div style="padding:16px 0;overflow-y:auto;flex:1">
+    <div class="history-summary">
+      <div class="hist-stat"><div class="val">12</div><div class="lbl">Pedidos</div></div>
+      <div class="hist-stat"><div class="val" style="font-size:15px">R$748</div><div class="lbl">Total gasto</div></div>
+      <div class="hist-stat"><div class="val">4.8⭐</div><div class="lbl">Nota média</div></div>
+    </div>
+    <div class="filter-row" style="padding:0 16px 12px">
+      <div class="filter-chip active" onclick="filterHistory(this,'all')">Todos</div>
+      <div class="filter-chip" onclick="filterHistory(this,'done')">Concluídos</div>
+      <div class="filter-chip" onclick="filterHistory(this,'active')">Em andamento</div>
+    </div>
+    <!-- Active order -->
+    <div class="order-card" onclick="go('screen-order-active')">
+      <div class="order-icon-box">✨</div>
+      <div class="order-info">
+        <h4>Higienização Premium</h4>
+        <p>Locker A-03 · 10/06/2025</p>
+        <div style="margin-top:6px"><span class="pill pill-orange">Em andamento</span></div>
+      </div>
+      <div><div class="order-price">R$ 89,90</div><p style="font-size:11px;color:var(--gray);text-align:right;margin-top:2px">›</p></div>
+    </div>
+    <!-- Concluded orders -->
+    <div class="order-card" onclick="go('screen-order-done')">
+      <div class="order-icon-box">🛡️</div>
+      <div class="order-info">
+        <h4>Impermeabilização</h4>
+        <p>Locker B-07 · 28/05/2025</p>
+        <div style="margin-top:6px"><span class="pill pill-green">Concluído</span></div>
+      </div>
+      <div><div class="order-price">R$ 59,90</div><p style="font-size:11px;color:var(--gray);text-align:right;margin-top:2px">›</p></div>
+    </div>
+    <div class="order-card">
+      <div class="order-icon-box">🔄</div>
+      <div class="order-info">
+        <h4>Restauração</h4>
+        <p>Locker A-03 · 15/05/2025</p>
+        <div style="margin-top:6px"><span class="pill pill-green">Concluído</span></div>
+      </div>
+      <div><div class="order-price">R$ 129,90</div><p style="font-size:11px;color:var(--gray);text-align:right;margin-top:2px">›</p></div>
+    </div>
+    <div class="order-card">
+      <div class="order-icon-box">🧹</div>
+      <div class="order-info">
+        <h4>Higienização Básica</h4>
+        <p>Locker D-01 · 02/05/2025</p>
+        <div style="margin-top:6px"><span class="pill pill-green">Concluído</span></div>
+      </div>
+      <div><div class="order-price">R$ 39,90</div><p style="font-size:11px;color:var(--gray);text-align:right;margin-top:2px">›</p></div>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="go('screen-home')"><div class="nav-icon">🏠</div><div class="nav-label">Início</div></div>
+    <div class="nav-item" onclick="go('screen-map')"><div class="nav-icon">📍</div><div class="nav-label">Lockers</div></div>
+    <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label" style="color:var(--accent)">Histórico</div></div>
+    <div class="nav-item" onclick="go('screen-profile')"><div class="nav-icon">👤</div><div class="nav-label">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ ORDER DETAIL — DONE ══════════════════════════════ -->
+<div id="screen-order-done" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-history')">←</button>
+    <h2>Pedido #2847</h2>
+    <span class="pill pill-green">Concluído</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <div style="width:48px;height:48px;border-radius:14px;background:#FFF0E8;display:flex;align-items:center;justify-content:center;font-size:24px">🛡️</div>
+        <div><h3 style="font-size:16px;font-weight:800">Impermeabilização</h3><p style="font-size:13px;color:var(--gray)">Locker B-07 · Shopping Norte</p></div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray)">Data do pedido</span><span style="font-size:13px;font-weight:600">25/05/2025</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray)">Conclusão</span><span style="font-size:13px;font-weight:600">28/05/2025</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:14px;font-weight:700">Total pago</span><span style="font-size:18px;font-weight:900;color:var(--accent)">R$ 59,90</span></div>
+    </div>
+    <div class="section-title">Linha do tempo</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Pedido criado</h4><p>25/05 · 09:14</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Pagamento confirmado</h4><p>25/05 · 09:15</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Calçado depositado no locker</h4><p>25/05 · 10:30</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Coletado pelo prestador</h4><p>25/05 · 11:00</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Serviço em andamento</h4><p>26/05 · 08:00</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Devolvido ao locker</h4><p>28/05 · 14:22</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div></div><div class="tl-content"><h4>Retirado pelo cliente</h4><p>28/05 · 17:45</p></div></div>
+    </div>
+    <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#FFFBF0,#FFF8E8);border:1px solid #FFE0B0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">⭐</span><h4 style="font-size:14px;font-weight:700">Sua avaliação</h4></div>
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <span style="font-size:20px">⭐</span><span style="font-size:20px">⭐</span><span style="font-size:20px">⭐</span><span style="font-size:20px">⭐</span><span style="font-size:20px">⭐</span>
+      </div>
+      <p style="font-size:13px;color:var(--gray);font-style:italic">"Ficou perfeito! Super recomendo o serviço de impermeabilização."</p>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ ORDER DETAIL — ACTIVE ══════════════════════════════ -->
+<div id="screen-order-active" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="go('screen-history')">←</button>
+    <h2>Pedido #3104</h2>
+    <span class="pill pill-orange">Em andamento</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <div style="width:48px;height:48px;border-radius:14px;background:#FFF0E8;display:flex;align-items:center;justify-content:center;font-size:24px">✨</div>
+        <div><h3 style="font-size:16px;font-weight:800">Higienização Premium</h3><p style="font-size:13px;color:var(--gray)">Locker A-03 · Shopping Norte</p></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;color:var(--gray)">Progresso</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent)">65%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray)">Data do pedido</span><span style="font-size:13px;font-weight:600">10/06/2025</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--gray)">Previsão de entrega</span><span style="font-size:13px;font-weight:700;color:var(--green)">15/06 até 18h</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:14px;font-weight:700">Valor</span><span style="font-size:18px;font-weight:900;color:var(--accent)">R$ 89,90</span></div>
+    </div>
+    <div class="section-title">Status atual</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Pedido criado</h4><p>10/06 · 08:30</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Pagamento confirmado</h4><p>10/06 · 08:31</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Calçado depositado no locker</h4><p>10/06 · 09:15</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot done"></div><div class="tl-line done"></div></div><div class="tl-content"><h4>Coletado pelo prestador</h4><p>10/06 · 10:00</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot active" style="background:var(--accent);animation:pulse 1.5s infinite"></div><div class="tl-line"></div></div><div class="tl-content"><h4 style="color:var(--accent)">Serviço em andamento ⚡</h4><p>Desde 11/06 · 08:00</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot pending"></div><div class="tl-line"></div></div><div class="tl-content" style="opacity:.5"><h4>Devolução ao locker</h4><p>Previsto 15/06</p></div></div>
+      <div class="tl-item"><div class="tl-left"><div class="tl-dot pending"></div></div><div class="tl-content" style="opacity:.5"><h4>Disponível para retirada</h4><p>—</p></div></div>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-primary" onclick="go('screen-pickup')">Ir para retirada</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ══════════════════════════════ PROFILE ══════════════════════════════ -->
+<div id="screen-profile" class="screen">
+  <div class="profile-header">
+    <div class="avatar-circle">CS</div>
+    <h2 style="font-size:20px;font-weight:800">Carlos Silva</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.65)">carlos.silva@email.com</p>
+    <div class="badge-gold">🥇 Membro Gold</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px 0 8px">
+    <div class="menu-section">
+      <h3>Conta</h3>
+      <div class="menu-item" onclick="showToast('Editar perfil')"><div class="mi-icon">👤</div><div class="mi-label">Editar perfil</div><div class="mi-arrow">›</div></div>
+      <div class="menu-item" onclick="showToast('Endereços')"><div class="mi-icon">📍</div><div class="mi-label">Meus endereços</div><div class="mi-arrow">›</div></div>
+      <div class="menu-item" onclick="showToast('Pagamentos')"><div class="mi-icon">💳</div><div class="mi-label">Métodos de pagamento</div><div class="mi-arrow">›</div></div>
+      <div class="menu-item" onclick="showToast('Notificações')"><div class="mi-icon">🔔</div><div class="mi-label">Notificações</div><div class="mi-arrow">›</div></div>
+    </div>
+    <div class="menu-section">
+      <h3>Benefícios</h3>
+      <div class="menu-item" onclick="showToast('1.240 pontos disponíveis!')">
+        <div class="mi-icon">⭐</div><div class="mi-label">Pontos de fidelidade</div>
+        <div class="mi-badge">1.240 pts</div>
+      </div>
+      <div class="menu-item" onclick="showToast('2 cupons disponíveis!')">
+        <div class="mi-icon">🎟️</div><div class="mi-label">Meus cupons</div>
+        <div class="mi-badge">2</div>
+      </div>
+      <div class="menu-item" onclick="showToast('Indicar amigos')"><div class="mi-icon">🤝</div><div class="mi-label">Indicar amigos</div><div class="mi-arrow">›</div></div>
+    </div>
+    <div class="menu-section">
+      <h3>Suporte</h3>
+      <div class="menu-item" onclick="showToast('Abrindo chat de suporte')"><div class="mi-icon">💬</div><div class="mi-label">Chat de suporte</div><div class="mi-arrow">›</div></div>
+      <div class="menu-item" onclick="showToast('Central de ajuda')"><div class="mi-icon">❓</div><div class="mi-label">Central de ajuda</div><div class="mi-arrow">›</div></div>
+      <div class="menu-item" onclick="showToast('Termos de uso')"><div class="mi-icon">📄</div><div class="mi-label">Termos e privacidade</div><div class="mi-arrow">›</div></div>
+    </div>
+    <div style="padding:8px 16px 16px">
+      <button class="btn" style="background:#FEECEC;color:var(--red);font-weight:700" onclick="go('screen-splash')">Sair da conta</button>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="go('screen-home')"><div class="nav-icon">🏠</div><div class="nav-label">Início</div></div>
+    <div class="nav-item" onclick="go('screen-map')"><div class="nav-icon">📍</div><div class="nav-label">Lockers</div></div>
+    <div class="nav-item" onclick="go('screen-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+    <div class="nav-item active"><div class="nav-icon">👤</div><div class="nav-label" style="color:var(--accent)">Perfil</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ TOAST ══════════════════════════════ -->
+<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
+<!-- shared toast -->
+<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
+</div>
+
+<!-- ════════════════ PROVIDER MODULE ════════════════ -->
+<div id="module-provider" class="module-wrap">
+<!-- ═══════════════════════ SPLASH PRESTADOR ═══════════════════════ -->
+<div id="screen-p-splash" class="screen active">
+  <div class="p-splash-top">
+    <div class="p-splash-logo">🛠️</div>
+    <h1>CLEANSTEP<br><span>LOCKERS</span></h1>
+    <div class="splash-badge">Área do Prestador</div>
+    <p style="margin-top:16px">Portal exclusivo para prestadores de serviço de higienização de calçados</p>
+  </div>
+  <div style="padding:28px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-provider" onclick="goP('screen-p-login')">Entrar como prestador</button>
+    <button class="btn" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="goP('screen-p-login')">Primeiro acesso</button>
+    <div class="tottec-footer" style="padding-top:8px">
+      <span style="color:rgba(255,255,255,.35)">Powered by <strong style="color:rgba(255,255,255,.55)">TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ LOGIN PRESTADOR ═══════════════════════ -->
+<div id="screen-p-login" class="screen">
+  <div class="prov-header">
+    <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-splash')">←</button>
+    <h2>Acesso do Prestador</h2>
+    <p>Entre com suas credenciais CLEANSTEP</p>
+  </div>
+  <div style="padding:28px;flex:1">
+    <div style="background:#E8F5EF;border-radius:12px;padding:12px 16px;display:flex;gap:10px;align-items:center;margin-bottom:20px">
+      <span style="font-size:20px">🔐</span>
+      <p style="font-size:13px;color:var(--provider);font-weight:600">Acesso restrito a prestadores credenciados pela TOTTEC</p>
+    </div>
+    <div class="input-group">
+      <label>ID do Prestador</label>
+      <input type="text" placeholder="Ex: PREST-2847" id="prov-id">
+    </div>
+    <div class="input-group">
+      <label>Senha</label>
+      <input type="password" placeholder="••••••••" id="prov-pass">
+    </div>
+    <button class="btn btn-provider" style="margin-top:8px" onclick="doProvLogin()">Entrar</button>
+    <p style="text-align:center;font-size:13px;color:var(--gray);margin-top:16px;line-height:1.6">Problemas de acesso? <span style="color:var(--accent);font-weight:700;cursor:pointer" onclick="showToastP('Suporte: (11) 3000-0000')">Fale com o suporte</span></p>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+<div id="screen-p-dashboard" class="screen">
+  <div class="dash-header">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <p style="color:rgba(255,255,255,.6);font-size:13px">Bom dia, João 👷</p>
+        <h2>Painel do Prestador</h2>
+        <p>ID: PREST-2847</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="provider-badge">✅ Online</div>
+        <p style="font-size:12px;color:rgba(255,255,255,.5)">Turno: 08h–18h</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:16px 0">
+    <!-- Alert -->
+    <div class="alert-card" onclick="goP('screen-p-route')">
+      <div class="a-icon">🔔</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700;color:var(--text)">3 coletas pendentes hoje</h4>
+        <p style="font-size:13px;color:var(--gray)">Próxima: Locker A-03 · Shopping Norte</p>
+      </div>
+      <span style="color:var(--gray);font-size:18px">›</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card accent-card">
+        <div class="sv">3</div>
+        <div class="sl">Coletas pendentes</div>
+      </div>
+      <div class="stat-card">
+        <div class="sv" style="color:var(--yellow)">2</div>
+        <div class="sl">Em serviço</div>
+      </div>
+      <div class="stat-card">
+        <div class="sv" style="color:var(--green)">8</div>
+        <div class="sl">Concluídos hoje</div>
+      </div>
+      <div class="stat-card">
+        <div class="sv" style="color:var(--primary)">4.9⭐</div>
+        <div class="sl">Avaliação</div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="padding:0 16px">
+      <div class="section-title">Ações rápidas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="card" style="cursor:pointer;text-align:center;padding:20px 12px" onclick="goP('screen-p-route')">
+          <div style="font-size:32px;margin-bottom:8px">🗺️</div>
+          <p style="font-size:14px;font-weight:700;color:var(--text)">Rotas de Coleta</p>
+          <p style="font-size:12px;color:var(--green);margin-top:2px;font-weight:600">3 pendentes</p>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;padding:20px 12px" onclick="goP('screen-p-inservice')">
+          <div style="font-size:32px;margin-bottom:8px">⚙️</div>
+          <p style="font-size:14px;font-weight:700;color:var(--text)">Em Serviço</p>
+          <p style="font-size:12px;color:var(--yellow);margin-top:2px;font-weight:600">2 em andamento</p>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;padding:20px 12px" onclick="goP('screen-p-deposit-select')">
+          <div style="font-size:32px;margin-bottom:8px">📦</div>
+          <p style="font-size:14px;font-weight:700;color:var(--text)">Devolver ao Locker</p>
+          <p style="font-size:12px;color:var(--gray);margin-top:2px;font-weight:600">Após o serviço</p>
+        </div>
+        <div class="card" style="cursor:pointer;text-align:center;padding:20px 12px" onclick="goP('screen-p-history')">
+          <div style="font-size:32px;margin-bottom:8px">📋</div>
+          <p style="font-size:14px;font-weight:700;color:var(--text)">Histórico</p>
+          <p style="font-size:12px;color:var(--gray);margin-top:2px;font-weight:600">Ver atendimentos</p>
+        </div>
+      </div>
+
+      <!-- Today's summary -->
+      <div class="section-title">Resumo do dia</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:13px;color:var(--gray)">Meta do dia</span>
+          <span style="font-size:13px;font-weight:700">8 / 12 serviços</span>
+        </div>
+        <div style="height:8px;background:var(--light);border-radius:8px;overflow:hidden">
+          <div style="height:100%;width:67%;background:linear-gradient(90deg,var(--provider),var(--provider2));border-radius:8px;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px">
+          <span style="font-size:13px;color:var(--gray)">Receita do dia</span>
+          <span style="font-size:14px;font-weight:800;color:var(--provider)">R$ 427,20</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="goP('screen-p-dashboard')"><div class="nav-icon">🏠</div><div class="nav-label" style="color:var(--accent)">Painel</div></div>
+    <div class="nav-item" onclick="goP('screen-p-route')"><div class="nav-icon">🗺️</div><div class="nav-label">Rotas</div></div>
+    <div class="nav-item" onclick="goP('screen-p-inservice')"><div class="nav-icon">⚙️</div><div class="nav-label">Serviços</div></div>
+    <div class="nav-item" onclick="goP('screen-p-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ ROTAS DE COLETA ═══════════════════════ -->
+<div id="screen-p-route" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-dashboard')">←</button>
+    <h2>Rotas de Coleta</h2>
+    <span class="pill pill-orange">3 pendentes</span>
+  </div>
+  <div style="flex:1;overflow-y:auto">
+    <!-- Map -->
+    <div class="route-map">
+      <svg viewBox="0 0 390 280" xmlns="http://www.w3.org/2000/svg">
+        <rect width="390" height="280" fill="#C8D8EC"/>
+        <rect x="0" y="70" width="390" height="44" fill="#B8C8DC"/>
+        <rect x="0" y="170" width="390" height="44" fill="#B8C8DC"/>
+        <rect x="70" y="0" width="44" height="280" fill="#B8C8DC"/>
+        <rect x="230" y="0" width="44" height="280" fill="#B8C8DC"/>
+        <!-- Blocks -->
+        <rect x="6" y="6" width="56" height="56" rx="5" fill="#A8B8CC"/>
+        <rect x="122" y="6" width="100" height="56" rx="5" fill="#A8B8CC"/>
+        <rect x="282" y="6" width="102" height="56" rx="5" fill="#A8B8CC"/>
+        <rect x="6" y="122" width="56" height="40" rx="5" fill="#A8B8CC"/>
+        <rect x="122" y="122" width="100" height="40" rx="5" fill="#A8B8CC"/>
+        <rect x="282" y="122" width="102" height="40" rx="5" fill="#A8B8CC"/>
+        <rect x="6" y="222" width="56" height="52" rx="5" fill="#A8B8CC"/>
+        <rect x="122" y="222" width="100" height="52" rx="5" fill="#A8B8CC"/>
+        <rect x="282" y="222" width="102" height="52" rx="5" fill="#A8B8CC"/>
+        <!-- Route line -->
+        <polyline points="170,142 170,92 280,92 280,142" fill="none" stroke="rgba(14,77,58,.6)" stroke-width="3" stroke-dasharray="6,4"/>
+        <!-- Provider position -->
+        <circle cx="170" cy="142" r="14" fill="rgba(14,77,58,.15)"/>
+        <circle cx="170" cy="142" r="7" fill="#0E4D3A"/>
+        <circle cx="170" cy="142" r="3" fill="white"/>
+        <!-- Pins coleta -->
+        <g onclick="goP('screen-p-collect-1')" style="cursor:pointer">
+          <circle cx="280" cy="142" r="18" fill="#FF6B2B"/>
+          <text x="280" y="147" text-anchor="middle" font-size="14" fill="white" font-weight="bold">1</text>
+        </g>
+        <g onclick="goP('screen-p-collect-2')" style="cursor:pointer">
+          <circle cx="280" cy="42" r="18" fill="#F39C12"/>
+          <text x="280" y="47" text-anchor="middle" font-size="14" fill="white" font-weight="bold">2</text>
+        </g>
+        <g style="cursor:pointer">
+          <circle cx="170" cy="248" r="18" fill="#F39C12"/>
+          <text x="170" y="253" text-anchor="middle" font-size="14" fill="white" font-weight="bold">3</text>
+        </g>
+        <!-- Road labels -->
+        <text x="195" y="96" text-anchor="middle" font-size="9" fill="#7A8A9C" font-family="sans-serif">Av. Principal</text>
+        <text x="195" y="196" text-anchor="middle" font-size="9" fill="#7A8A9C" font-family="sans-serif">Rua das Flores</text>
+      </svg>
+      <button class="back-btn" style="position:absolute;top:8px;left:10px;background:var(--white)" onclick="goP('screen-p-dashboard')">←</button>
+    </div>
+
+    <!-- Route list -->
+    <div style="padding:14px 0 0">
+      <div style="padding:0 16px 10px">
+        <p style="font-size:13px;color:var(--gray)">Toque em um ponto para ver os detalhes da coleta</p>
+      </div>
+      <div class="route-step-card active-route" onclick="goP('screen-p-collect-1')">
+        <div class="route-num" style="background:#FFF0E8;color:var(--accent)">1</div>
+        <div class="route-info" style="flex:1">
+          <h4>Locker A-03 · Shopping Norte</h4>
+          <p>📦 2 calçados · 320m · Corredor B</p>
+        </div>
+        <div style="text-align:right">
+          <span class="pill pill-orange">Urgente</span>
+          <p style="font-size:11px;color:var(--gray);margin-top:4px">Há 3h</p>
+        </div>
+      </div>
+      <div class="route-step-card pending-route" onclick="goP('screen-p-collect-2')">
+        <div class="route-num" style="background:#FFF8E0;color:var(--yellow)">2</div>
+        <div class="route-info" style="flex:1">
+          <h4>Locker B-07 · Metrô Central</h4>
+          <p>📦 1 calçado · 780m</p>
+        </div>
+        <div style="text-align:right">
+          <span class="pill pill-yellow">Pendente</span>
+          <p style="font-size:11px;color:var(--gray);margin-top:4px">Há 1h</p>
+        </div>
+      </div>
+      <div class="route-step-card pending-route">
+        <div class="route-num" style="background:#FFF8E0;color:var(--yellow)">3</div>
+        <div class="route-info" style="flex:1">
+          <h4>Locker D-01 · Av. Paulista</h4>
+          <p>📦 1 calçado · 1.4km</p>
+        </div>
+        <div style="text-align:right">
+          <span class="pill pill-yellow">Pendente</span>
+          <p style="font-size:11px;color:var(--gray);margin-top:4px">Hoje</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:12px 16px">
+    <button class="btn btn-provider" onclick="goP('screen-p-collect-1')">Iniciar coleta — Locker A-03</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goP('screen-p-dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Painel</div></div>
+    <div class="nav-item active"><div class="nav-icon">🗺️</div><div class="nav-label" style="color:var(--accent)">Rotas</div></div>
+    <div class="nav-item" onclick="goP('screen-p-inservice')"><div class="nav-icon">⚙️</div><div class="nav-label">Serviços</div></div>
+    <div class="nav-item" onclick="goP('screen-p-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ COLETA DETALHE — LOCKER A-03 ═══════════════════════ -->
+<div id="screen-p-collect-1" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-route')">←</button>
+    <h2>Coleta · Locker A-03</h2>
+    <span class="pill pill-orange">Urgente</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <!-- Locker info -->
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--accent)">
+      <div style="display:flex;gap:12px;align-items:center">
+        <span style="font-size:32px">📍</span>
+        <div>
+          <h3 style="font-size:15px;font-weight:800">Locker A-03</h3>
+          <p style="font-size:13px;color:var(--gray)">Shopping Norte · Corredor B, próx. loja 47</p>
+          <p style="font-size:13px;color:var(--gray)">🕐 Aberto 24h</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prestador ID -->
+    <div class="section-title">Sua identificação</div>
+    <div class="id-card-row" style="margin-bottom:16px">
+      <div class="id-avatar">JP</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700">João Pereira</h4>
+        <p style="font-size:12px;color:var(--gray)">ID: PREST-2847</p>
+        <p style="font-size:12px;color:var(--gray)">Turno: 08h–18h</p>
+      </div>
+      <span class="pill pill-green">Credenciado ✓</span>
+    </div>
+
+    <!-- Tickets to collect -->
+    <div class="section-title">Calçados no locker (2)</div>
+    <div class="card" style="margin-bottom:10px;cursor:pointer" onclick="goP('screen-p-scan-1')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">👟</span>
+            <h4 style="font-size:15px;font-weight:800">Ticket #CS-7429</h4>
+          </div>
+          <p style="font-size:13px;color:var(--gray);margin-top:4px">Higienização Premium · R$ 89,90</p>
+        </div>
+        <span class="pill pill-orange">Aguardando</span>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--gray)">Cliente: Carlos S.</span>
+        <span style="font-size:12px;color:var(--gray)">Depositado: hoje 09h15</span>
+      </div>
+      <button class="btn btn-provider" style="margin-top:12px;padding:12px" onclick="event.stopPropagation();goP('screen-p-scan-1')">📷 Escanear ticket</button>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="goP('screen-p-scan-2')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">👠</span>
+            <h4 style="font-size:15px;font-weight:800">Ticket #CS-7430</h4>
+          </div>
+          <p style="font-size:13px;color:var(--gray);margin-top:4px">Impermeabilização · R$ 59,90</p>
+        </div>
+        <span class="pill pill-orange">Aguardando</span>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--gray)">Cliente: Ana M.</span>
+        <span style="font-size:12px;color:var(--gray)">Depositado: hoje 08h30</span>
+      </div>
+      <button class="btn btn-provider" style="margin-top:12px;padding:12px" onclick="event.stopPropagation();goP('screen-p-scan-2')">📷 Escanear ticket</button>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-outline" onclick="goP('screen-p-locker-open-collect')">🔓 Abrir Locker A-03</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ COLETA DETALHE — LOCKER B-07 ═══════════════════════ -->
+<div id="screen-p-collect-2" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-route')">←</button>
+    <h2>Coleta · Locker B-07</h2>
+    <span class="pill pill-yellow">Pendente</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;border-left:4px solid var(--yellow)">
+      <div style="display:flex;gap:12px;align-items:center">
+        <span style="font-size:32px">📍</span>
+        <div>
+          <h3 style="font-size:15px;font-weight:800">Locker B-07</h3>
+          <p style="font-size:13px;color:var(--gray)">Metrô Central · Mezanino, ao lado da bilheteria</p>
+          <p style="font-size:13px;color:var(--gray)">🕐 Aberto 24h</p>
+        </div>
+      </div>
+    </div>
+    <div class="id-card-row" style="margin-bottom:16px">
+      <div class="id-avatar">JP</div>
+      <div style="flex:1"><h4 style="font-size:14px;font-weight:700">João Pereira</h4><p style="font-size:12px;color:var(--gray)">ID: PREST-2847</p></div>
+      <span class="pill pill-green">Credenciado ✓</span>
+    </div>
+    <div class="section-title">Calçados no locker (1)</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">👢</span><h4 style="font-size:15px;font-weight:800">Ticket #CS-7431</h4></div>
+          <p style="font-size:13px;color:var(--gray);margin-top:4px">Restauração · R$ 129,90</p>
+        </div>
+        <span class="pill pill-yellow">Aguardando</span>
+      </div>
+      <div class="divider" style="margin:10px 0"></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--gray)">Cliente: Roberto L.</span>
+        <span style="font-size:12px;color:var(--gray)">Depositado: hoje 07h45</span>
+      </div>
+      <button class="btn btn-provider" style="margin-top:12px;padding:12px" onclick="showToastP('Abrindo scanner...')">📷 Escanear ticket</button>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-outline" onclick="showToastP('Locker B-07 desbloqueado!')">🔓 Abrir Locker B-07</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ ABERTURA LOCKER (COLETA) ═══════════════════════ -->
+<div id="screen-p-locker-open-collect" class="screen">
+  <div class="p-locker-body">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+      <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-collect-1')">←</button>
+      <h2 style="color:#fff;font-size:18px;font-weight:800">Abertura do Locker A-03</h2>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+      <div class="locker-anim-box">
+        <div class="locker-body-anim">
+          <div class="locker-door-anim" id="p-locker-door"><div class="handle"></div></div>
+          <div style="font-size:36px">👟</div>
+        </div>
+      </div>
+      <p style="color:rgba(255,255,255,.7);font-size:14px;text-align:center" id="p-locker-status">Pressione para desbloquear e retirar</p>
+    </div>
+    <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:12px 16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">Prestador</span>
+        <span style="font-size:13px;font-weight:700;color:#fff">João Pereira · PREST-2847</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">Locker</span>
+        <span style="font-size:13px;font-weight:700;color:#fff">A-03 · Shopping Norte</span>
+      </div>
+    </div>
+    <button class="btn btn-provider" style="font-size:17px;padding:18px" id="p-unlock-btn" onclick="unlockProvLocker()">🔓 Desbloquear para coleta</button>
+  </div>
+  <div class="tottec-footer" style="background:linear-gradient(160deg,var(--provider),#071F17);padding-bottom:20px">
+    <span style="color:rgba(255,255,255,.35)">Powered by <strong style="color:rgba(255,255,255,.55)">TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SCAN TICKET #CS-7429 ═══════════════════════ -->
+<div id="screen-p-scan-1" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-collect-1')">←</button>
+    <h2>Vincular Ticket</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="ticket-card">
+      <div class="tk-label">Ticket do calçado</div>
+      <div class="tk-code">#CS-<span>7429</span></div>
+      <div style="display:flex;gap:16px;margin-top:12px">
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Serviço</p><p style="font-size:13px;font-weight:700">Higienização Premium</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Cliente</p><p style="font-size:13px;font-weight:700">Carlos S.</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Valor</p><p style="font-size:13px;font-weight:700">R$ 89,90</p></div>
+      </div>
+    </div>
+
+    <!-- Scanner -->
+    <div class="section-title">Escanear etiqueta do calçado</div>
+    <div class="scan-box" id="scan-box-1" onclick="simulateScan('scan-box-1','scan-result-1','screen-p-verify-1')">
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+      <div class="scan-line"></div>
+      <span style="font-size:48px">📷</span>
+      <p style="color:rgba(255,255,255,.6);font-size:14px">Aponte a câmera para a etiqueta</p>
+      <p style="color:rgba(255,255,255,.4);font-size:12px">Toque para simular scan</p>
+    </div>
+    <div id="scan-result-1" style="display:none;margin-top:14px">
+      <div style="background:#E8F8EE;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center;border:1px solid #A8D8B8">
+        <span style="font-size:24px">✅</span>
+        <div>
+          <h4 style="font-size:14px;font-weight:700;color:var(--green)">Ticket vinculado com sucesso!</h4>
+          <p style="font-size:13px;color:var(--gray)">#CS-7429 → Prestador PREST-2847</p>
+          <p style="font-size:12px;color:var(--gray)">10/06/2025 · 10:04:37</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual entry -->
+    <div style="margin-top:16px">
+      <div class="section-title">Ou insira o código manualmente</div>
+      <div style="display:flex;gap:10px">
+        <input type="text" placeholder="Ex: CS-7429" style="flex:1;padding:13px 14px;border-radius:12px;border:2px solid var(--light);font-size:15px;outline:none;" id="manual-ticket-1">
+        <button style="padding:13px 18px;border-radius:12px;background:var(--provider);color:#fff;border:none;font-weight:700;cursor:pointer;font-size:14px" onclick="manualLink('manual-ticket-1','scan-result-1','screen-p-verify-1')">Vincular</button>
+      </div>
+    </div>
+
+    <!-- Prestador ID reminder -->
+    <div class="card" style="margin-top:16px;border-left:4px solid var(--provider)">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="id-avatar" style="width:36px;height:36px;font-size:14px">JP</div>
+        <div>
+          <p style="font-size:13px;font-weight:700;color:var(--text)">Responsável pela coleta</p>
+          <p style="font-size:12px;color:var(--gray)">João Pereira · PREST-2847 · 10/06/2025</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px" id="btn-confirm-scan-1" style="display:none">
+    <button class="btn btn-provider" onclick="goP('screen-p-verify-1')">Confirmar coleta e verificar calçado</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ SCAN TICKET #CS-7430 ═══════════════════════ -->
+<div id="screen-p-scan-2" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-collect-1')">←</button>
+    <h2>Vincular Ticket</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="ticket-card">
+      <div class="tk-label">Ticket do calçado</div>
+      <div class="tk-code">#CS-<span>7430</span></div>
+      <div style="display:flex;gap:16px;margin-top:12px">
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Serviço</p><p style="font-size:13px;font-weight:700">Impermeabilização</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Cliente</p><p style="font-size:13px;font-weight:700">Ana M.</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Valor</p><p style="font-size:13px;font-weight:700">R$ 59,90</p></div>
+      </div>
+    </div>
+    <div class="scan-box" onclick="simulateScan('scan-box-2','scan-result-2','screen-p-verify-2')">
+      <div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div>
+      <div class="scan-line"></div>
+      <span style="font-size:48px">📷</span>
+      <p style="color:rgba(255,255,255,.6);font-size:14px">Aponte a câmera para a etiqueta</p>
+      <p style="color:rgba(255,255,255,.4);font-size:12px">Toque para simular scan</p>
+    </div>
+    <div id="scan-result-2" style="display:none;margin-top:14px">
+      <div style="background:#E8F8EE;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center;border:1px solid #A8D8B8">
+        <span style="font-size:24px">✅</span>
+        <div><h4 style="font-size:14px;font-weight:700;color:var(--green)">Ticket vinculado!</h4><p style="font-size:13px;color:var(--gray)">#CS-7430 → PREST-2847</p></div>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div class="section-title">Ou insira manualmente</div>
+      <div style="display:flex;gap:10px">
+        <input type="text" placeholder="Ex: CS-7430" style="flex:1;padding:13px 14px;border-radius:12px;border:2px solid var(--light);font-size:15px;outline:none;" id="manual-ticket-2">
+        <button style="padding:13px 18px;border-radius:12px;background:var(--provider);color:#fff;border:none;font-weight:700;cursor:pointer;font-size:14px" onclick="manualLink('manual-ticket-2','scan-result-2','screen-p-verify-2')">Vincular</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;border-left:4px solid var(--provider)">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="id-avatar" style="width:36px;height:36px;font-size:14px">JP</div>
+        <div><p style="font-size:13px;font-weight:700">João Pereira · PREST-2847</p><p style="font-size:12px;color:var(--gray)">10/06/2025</p></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-provider" onclick="goP('screen-p-verify-2')">Confirmar coleta e verificar calçado</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ VERIFICAÇÃO CALÇADO — #7429 ═══════════════════════ -->
+<div id="screen-p-verify-1" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-scan-1')">←</button>
+    <h2>Verificar Calçado</h2>
+    <span class="pill pill-blue">#CS-7429</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;background:#E8F5EF;border:1px solid #A8D8B8">
+      <p style="font-size:13px;color:var(--provider);line-height:1.6">✅ <strong>Ticket vinculado ao seu ID.</strong> Confira o estado do calçado e registre observações antes de retirar.</p>
+    </div>
+    <!-- Photo verification -->
+    <div class="section-title">Foto do estado recebido</div>
+    <div style="background:#1A1A2E;border-radius:14px;height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;margin-bottom:16px" id="verify-photo-1" onclick="captureVerifyPhoto('verify-photo-1')">
+      <span style="font-size:36px">📷</span>
+      <p style="color:rgba(255,255,255,.5);font-size:13px">Fotografar calçado recebido</p>
+    </div>
+    <!-- Checklist -->
+    <div class="section-title">Checklist de recebimento</div>
+    <div class="check-item" id="ci1" onclick="toggleCheck('ci1')"><div class="ci-box">✓</div><div><p>Calçado corresponde ao ticket</p><span>Modelo e cor conferem</span></div></div>
+    <div class="check-item" id="ci2" onclick="toggleCheck('ci2')"><div class="ci-box">✓</div><div><p>Nenhum dano pré-existente grave</p><span>Registrar se houver dano</span></div></div>
+    <div class="check-item" id="ci3" onclick="toggleCheck('ci3')"><div class="ci-box">✓</div><div><p>Solado em condições de serviço</p><span>Verificar separações</span></div></div>
+    <div class="check-item" id="ci4" onclick="toggleCheck('ci4')"><div class="ci-box">✓</div><div><p>Par completo (esquerdo + direito)</p><span></span></div></div>
+    <!-- Observations -->
+    <div class="input-group" style="margin-top:14px">
+      <label>Observações (opcional)</label>
+      <textarea placeholder="Ex: Risco leve no salto esquerdo, pré-existente..." rows="3" style="width:100%;padding:12px 14px;border-radius:12px;border:2px solid var(--light);font-size:14px;resize:none;outline:none;font-family:inherit;color:var(--text)"></textarea>
+    </div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-provider" onclick="goP('screen-p-inservice')">✅ Confirmar coleta e enviar para serviço</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ VERIFICAÇÃO CALÇADO — #7430 ═══════════════════════ -->
+<div id="screen-p-verify-2" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-scan-2')">←</button>
+    <h2>Verificar Calçado</h2>
+    <span class="pill pill-blue">#CS-7430</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;background:#E8F5EF;border:1px solid #A8D8B8">
+      <p style="font-size:13px;color:var(--provider)">✅ <strong>Ticket #CS-7430 vinculado.</strong> Verifique o calçado antes de retirar.</p>
+    </div>
+    <div style="background:#1A1A2E;border-radius:14px;height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;margin-bottom:16px" onclick="showToastP('Foto registrada ✅')">
+      <span style="font-size:36px">📷</span><p style="color:rgba(255,255,255,.5);font-size:13px">Fotografar calçado</p>
+    </div>
+    <div class="check-item" id="ci5" onclick="toggleCheck('ci5')"><div class="ci-box">✓</div><div><p>Calçado corresponde ao ticket</p></div></div>
+    <div class="check-item" id="ci6" onclick="toggleCheck('ci6')"><div class="ci-box">✓</div><div><p>Par completo</p></div></div>
+    <div class="check-item" id="ci7" onclick="toggleCheck('ci7')"><div class="ci-box">✓</div><div><p>Condições adequadas para serviço</p></div></div>
+  </div>
+  <div style="padding:0 20px 20px">
+    <button class="btn btn-provider" onclick="goP('screen-p-inservice')">✅ Confirmar coleta</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ EM SERVIÇO ═══════════════════════ -->
+<div id="screen-p-inservice" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-dashboard')">←</button>
+    <h2>Em Serviço</h2>
+    <span class="pill pill-yellow">2 ativos</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="section-title">Serviços em andamento</div>
+
+    <!-- Service 1 -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:24px">👟</span>
+          <div>
+            <h4 style="font-size:15px;font-weight:800">#CS-7429</h4>
+            <p style="font-size:13px;color:var(--gray)">Higienização Premium</p>
+          </div>
+        </div>
+        <span class="pill pill-yellow">Em andamento</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--gray)">Coletado</span>
+        <span style="font-size:13px;font-weight:600">hoje 10:04</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:13px;color:var(--gray)">Prazo de entrega</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">13/06 até 18h</span>
+      </div>
+      <!-- Ring progress -->
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="service-progress-ring">
+          <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="54"/>
+            <circle class="ring-fill" id="ring1" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="ring-label">
+            <span style="font-size:22px;font-weight:900;color:var(--provider)" id="ring1-pct">0%</span>
+            <span style="font-size:11px;color:var(--gray)">concluído</span>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="margin-bottom:8px"><span class="pill pill-green">✓ Lavagem</span></div>
+          <div style="margin-bottom:8px"><span class="pill pill-yellow">⚙️ Secagem</span></div>
+          <div style="opacity:.4"><span class="pill pill-gray">⏳ Finalização</span></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-provider" style="padding:12px" onclick="goP('screen-p-deposit-select')">📦 Concluir e depositar</button>
+    </div>
+
+    <!-- Service 2 -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:24px">👠</span>
+          <div>
+            <h4 style="font-size:15px;font-weight:800">#CS-7430</h4>
+            <p style="font-size:13px;color:var(--gray)">Impermeabilização</p>
+          </div>
+        </div>
+        <span class="pill pill-yellow">Em andamento</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:13px;color:var(--gray)">Prazo</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">14/06 até 18h</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="service-progress-ring">
+          <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="54"/>
+            <circle class="ring-fill" id="ring2" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="ring-label">
+            <span style="font-size:22px;font-weight:900;color:var(--provider)" id="ring2-pct">0%</span>
+            <span style="font-size:11px;color:var(--gray)">concluído</span>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div style="margin-bottom:8px"><span class="pill pill-green">✓ Preparação</span></div>
+          <div style="opacity:.4"><span class="pill pill-gray">⏳ Aplicação</span></div>
+          <div style="opacity:.4;margin-top:8px"><span class="pill pill-gray">⏳ Secagem</span></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-ghost" style="padding:12px" onclick="showToastP('Serviço em andamento...')">Ver detalhes</button>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goP('screen-p-dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Painel</div></div>
+    <div class="nav-item" onclick="goP('screen-p-route')"><div class="nav-icon">🗺️</div><div class="nav-label">Rotas</div></div>
+    <div class="nav-item active"><div class="nav-icon">⚙️</div><div class="nav-label" style="color:var(--accent)">Serviços</div></div>
+    <div class="nav-item" onclick="goP('screen-p-history')"><div class="nav-icon">📋</div><div class="nav-label">Histórico</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SELEÇÃO DEVOLUÇÃO ═══════════════════════ -->
+<div id="screen-p-deposit-select" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-inservice')">←</button>
+    <h2>Devolver ao Locker</h2>
+  </div>
+  <div style="padding:20px;flex:1">
+    <div class="card" style="margin-bottom:16px;background:#E8F5EF;border:1px solid #A8D8B8">
+      <p style="font-size:13px;color:var(--provider);line-height:1.6">📦 Selecione o calçado a ser devolvido ao locker após a conclusão do serviço.</p>
+    </div>
+    <div class="section-title">Calçados prontos para devolução</div>
+    <div class="card" style="margin-bottom:12px;cursor:pointer;border:2px solid var(--green)" onclick="goP('screen-p-deposit-1')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:24px">👟</span>
+          <div>
+            <h4 style="font-size:15px;font-weight:800">#CS-7429</h4>
+            <p style="font-size:13px;color:var(--gray)">Higienização Premium</p>
+          </div>
+        </div>
+        <span class="pill pill-green">✅ Pronto</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--gray)">Cliente: Carlos S.</span>
+        <span style="font-size:12px;color:var(--gray)">Locker: A-03</span>
+      </div>
+      <button class="btn btn-provider" style="margin-top:10px;padding:12px">📦 Depositar no locker</button>
+    </div>
+    <div class="card" style="cursor:pointer;opacity:.7">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:24px">👠</span>
+          <div>
+            <h4 style="font-size:15px;font-weight:800">#CS-7430</h4>
+            <p style="font-size:13px;color:var(--gray)">Impermeabilização</p>
+          </div>
+        </div>
+        <span class="pill pill-yellow">Em andamento</span>
+      </div>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ DEPÓSITO — DEVOLUÇÃO ═══════════════════════ -->
+<div id="screen-p-deposit-1" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goP('screen-p-deposit-select')">←</button>
+    <h2>Depositar Calçado</h2>
+    <span class="pill pill-blue">#CS-7429</span>
+  </div>
+  <div style="padding:20px;flex:1">
+    <!-- Ticket summary -->
+    <div class="ticket-card">
+      <div class="tk-label">Devolvendo ticket</div>
+      <div class="tk-code">#CS-<span>7429</span></div>
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Serviço</p><p style="font-size:13px;font-weight:700">Higienização Premium</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Locker destino</p><p style="font-size:13px;font-weight:700">A-03 · Shopping Norte</p></div>
+        <div><p style="font-size:11px;color:rgba(255,255,255,.55)">Prestador</p><p style="font-size:13px;font-weight:700">PREST-2847</p></div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="section-title" style="margin-top:4px">Passo a passo</div>
+    <div class="deposit-step">
+      <div class="ds-num">1</div>
+      <p style="font-size:14px;color:var(--text);padding-top:4px">Dirija-se ao <strong>Locker A-03</strong> no Shopping Norte, Corredor B</p>
+    </div>
+    <div class="deposit-step">
+      <div class="ds-num">2</div>
+      <p style="font-size:14px;color:var(--text);padding-top:4px">Use seu ID de prestador <strong>PREST-2847</strong> para abrir o locker</p>
+    </div>
+    <div class="deposit-step">
+      <div class="ds-num">3</div>
+      <p style="font-size:14px;color:var(--text);padding-top:4px">Deposite o calçado e escaneie o ticket de confirmação</p>
+    </div>
+    <div class="deposit-step">
+      <div class="ds-num">4</div>
+      <p style="font-size:14px;color:var(--text);padding-top:4px">Confirme o depósito no app — cliente será notificado automaticamente</p>
+    </div>
+
+    <!-- Foto do calçado pós-serviço -->
+    <div class="section-title" style="margin-top:4px">Foto do calçado pós-serviço</div>
+    <div style="background:#1A1A2E;border-radius:14px;height:150px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;margin-bottom:16px" id="deposit-photo" onclick="captureDepositPhoto()">
+      <span style="font-size:36px">📷</span>
+      <p style="color:rgba(255,255,255,.5);font-size:13px">Fotografar após serviço</p>
+    </div>
+
+    <!-- Open locker -->
+    <button class="btn btn-outline" style="margin-bottom:12px" onclick="goP('screen-p-locker-deposit')">🔓 Abrir Locker A-03 para depósito</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ ABERTURA LOCKER (DEPÓSITO) ═══════════════════════ -->
+<div id="screen-p-locker-deposit" class="screen">
+  <div class="p-locker-body">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+      <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-deposit-1')">←</button>
+      <h2 style="color:#fff;font-size:18px;font-weight:800">Depósito · Locker A-03</h2>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+      <div class="locker-anim-box">
+        <div class="locker-body-anim">
+          <div class="locker-door-anim" id="dep-locker-door"><div class="handle"></div></div>
+          <div style="font-size:36px">📦</div>
+        </div>
+      </div>
+      <p style="color:rgba(255,255,255,.7);font-size:14px;text-align:center" id="dep-locker-status">Pressione para abrir e depositar</p>
+    </div>
+    <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:12px 16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">Ticket</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent2)">#CS-7429</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">Prestador</span>
+        <span style="font-size:13px;font-weight:700;color:#fff">PREST-2847</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:13px;color:rgba(255,255,255,.6)">Locker destino</span>
+        <span style="font-size:13px;font-weight:700;color:#fff">A-03 · Shopping Norte</span>
+      </div>
+    </div>
+    <button class="btn btn-provider" style="font-size:17px;padding:18px" id="dep-unlock-btn" onclick="unlockDepLocker()">🔓 Desbloquear para depósito</button>
+  </div>
+  <div class="tottec-footer" style="background:linear-gradient(160deg,var(--provider),#071F17);padding-bottom:20px">
+    <span style="color:rgba(255,255,255,.35)">Powered by <strong style="color:rgba(255,255,255,.55)">TOTTEC — GESTÃO E TECNOLOGIA</strong></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ CONFIRMAÇÃO DEPÓSITO ═══════════════════════ -->
+<div id="screen-p-deposit-confirm" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
+    <div style="font-size:64px;margin-bottom:16px;animation:pulse 1s infinite">🎉</div>
+    <h2 style="font-size:24px;font-weight:800;color:var(--text)">Depósito confirmado!</h2>
+    <p style="font-size:14px;color:var(--gray);margin-top:8px;line-height:1.6">O calçado foi devolvido ao locker com sucesso. O cliente foi notificado automaticamente.</p>
+    <div style="background:var(--white);border-radius:20px;padding:24px;width:100%;margin-top:24px;box-shadow:var(--shadow);text-align:left">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--gray)">Ticket</span><span style="font-size:13px;font-weight:800;color:var(--provider)">#CS-7429</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--gray)">Serviço</span><span style="font-size:13px;font-weight:700">Higienização Premium</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--gray)">Locker</span><span style="font-size:13px;font-weight:700">A-03 · Shopping Norte</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--gray)">Prestador</span><span style="font-size:13px;font-weight:700">PREST-2847</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--gray)">Data/hora</span><span style="font-size:13px;font-weight:700">10/06/2025 · 16:42</span></div>
+      <div class="divider"></div>
+      <div style="background:#E8F8EE;border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center">
+        <span style="font-size:18px">🔔</span>
+        <p style="font-size:13px;color:var(--green);font-weight:600">Push enviado para Carlos S.</p>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 28px 24px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-provider" onclick="goP('screen-p-dashboard')">Voltar ao painel</button>
+    <button class="btn btn-ghost" onclick="goP('screen-p-route')">Ver próximas coletas</button>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+</div>
+
+<!-- ═══════════════════════ HISTÓRICO DO PRESTADOR ═══════════════════════ -->
+<div id="screen-p-history" class="screen">
+  <div class="topbar">
+    <h2 style="flex:1">Meu Histórico</h2>
+  </div>
+  <div style="padding:16px 0;flex:1">
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 16px 20px">
+      <div class="stat-card"><div class="sv" style="font-size:22px">47</div><div class="sl">Total</div></div>
+      <div class="stat-card"><div class="sv" style="font-size:18px;color:var(--green)">R$2.1k</div><div class="sl">Ganhos</div></div>
+      <div class="stat-card"><div class="sv" style="font-size:18px">4.9⭐</div><div class="sl">Nota</div></div>
+    </div>
+    <div style="padding:0 16px 12px"><div class="section-title">Atendimentos recentes</div></div>
+    <div class="prov-order-card">
+      <div class="prov-icon-box">✨</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700">#CS-7425 · Higienização Premium</h4>
+        <p style="font-size:12px;color:var(--gray)">Locker A-03 · 09/06/2025</p>
+        <span class="pill pill-green" style="margin-top:4px">Concluído</span>
+      </div>
+      <div style="text-align:right"><p style="font-size:14px;font-weight:800;color:var(--provider)">R$ 89,90</p><p style="font-size:11px;color:var(--gray)">Nota: 5⭐</p></div>
+    </div>
+    <div class="prov-order-card">
+      <div class="prov-icon-box">🛡️</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700">#CS-7418 · Impermeabilização</h4>
+        <p style="font-size:12px;color:var(--gray)">Locker B-07 · 08/06/2025</p>
+        <span class="pill pill-green" style="margin-top:4px">Concluído</span>
+      </div>
+      <div style="text-align:right"><p style="font-size:14px;font-weight:800;color:var(--provider)">R$ 59,90</p><p style="font-size:11px;color:var(--gray)">Nota: 5⭐</p></div>
+    </div>
+    <div class="prov-order-card">
+      <div class="prov-icon-box">🔄</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700">#CS-7410 · Restauração</h4>
+        <p style="font-size:12px;color:var(--gray)">Locker D-01 · 07/06/2025</p>
+        <span class="pill pill-green" style="margin-top:4px">Concluído</span>
+      </div>
+      <div style="text-align:right"><p style="font-size:14px;font-weight:800;color:var(--provider)">R$ 129,90</p><p style="font-size:11px;color:var(--gray)">Nota: 4⭐</p></div>
+    </div>
+    <div class="prov-order-card">
+      <div class="prov-icon-box">🧹</div>
+      <div style="flex:1">
+        <h4 style="font-size:14px;font-weight:700">#CS-7402 · Higienização Básica</h4>
+        <p style="font-size:12px;color:var(--gray)">Locker A-03 · 06/06/2025</p>
+        <span class="pill pill-green" style="margin-top:4px">Concluído</span>
+      </div>
+      <div style="text-align:right"><p style="font-size:14px;font-weight:800;color:var(--provider)">R$ 39,90</p><p style="font-size:11px;color:var(--gray)">Nota: 5⭐</p></div>
+    </div>
+  </div>
+  <div class="tottec-footer"><span>Powered by <strong>TOTTEC — GESTÃO E TECNOLOGIA</strong></span></div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="goP('screen-p-dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Painel</div></div>
+    <div class="nav-item" onclick="goP('screen-p-route')"><div class="nav-icon">🗺️</div><div class="nav-label">Rotas</div></div>
+    <div class="nav-item" onclick="goP('screen-p-inservice')"><div class="nav-icon">⚙️</div><div class="nav-label">Serviços</div></div>
+    <div class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label" style="color:var(--accent)">Histórico</div></div>
+  </div>
+</div>
+
+<!-- ══════ TOAST ══════ -->
+<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
+<div id="toast-p" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(14,77,58,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
+</div>
+
+<!-- back button -->
+<div id="back-to-selector">
+  <button class="back-module-btn" onclick="closeModule()">⬅ Trocar módulo</button>
+</div>
+
+</div><!-- end phone -->
+
+<script>
+// ══ MODULE SWITCHER ══
+let activeModule = null;
+function openModule(mod) {
+  document.getElementById('screen-selector').classList.remove('active');
+  document.querySelectorAll('.module-wrap').forEach(w => w.classList.remove('active'));
+  const wrap = document.getElementById('module-' + mod);
+  wrap.classList.add('active');
+  activeModule = mod;
+  document.getElementById('back-to-selector').style.display = 'block';
+  if (mod === 'client') {
+    go('screen-splash');
+  } else {
+    goP('screen-p-splash');
+  }
+}
+function closeModule() {
+  document.querySelectorAll('.module-wrap').forEach(w => w.classList.remove('active'));
+  document.getElementById('screen-selector').classList.add('active');
+  document.getElementById('back-to-selector').style.display = 'none';
+  activeModule = null;
+}
+
+// ══ CLIENT SCRIPT ══
+
+// ── NAVIGATION ──
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2200);
+}
+
+// ── LOGIN VALIDATION ──
+function doLogin() {
+  const email = document.getElementById('login-email');
+  const pass = document.getElementById('login-pass');
+  const ge = document.getElementById('ig-email');
+  const gp = document.getElementById('ig-pass');
+  let valid = true;
+  ge.classList.remove('has-error'); gp.classList.remove('has-error');
+  email.classList.remove('error'); pass.classList.remove('error');
+  if (!email.value.trim()) { ge.classList.add('has-error'); email.classList.add('error'); valid = false; }
+  if (!pass.value.trim()) { gp.classList.add('has-error'); pass.classList.add('error'); valid = false; }
+  if (valid) go('screen-home');
+}
+
+// ── SERVICE SELECTION ──
+let selSvc = 'Higienização Premium', selPrice = 'R$ 89,90';
+function selectService(name, price) {
+  selSvc = name; selPrice = price;
+  const el = document.getElementById('pay-svc');
+  const elp = document.getElementById('pay-price');
+  if (el) el.textContent = name;
+  if (elp) elp.textContent = price;
+  go('screen-map');
+}
+
+// ── PAYMENT TABS ──
+function switchTab(t) {
+  document.getElementById('tab-pix').classList.toggle('active', t==='pix');
+  document.getElementById('tab-card').classList.toggle('active', t==='card');
+  document.getElementById('pix-panel').style.display = t==='pix' ? 'block' : 'none';
+  document.getElementById('card-panel').style.display = t==='card' ? 'block' : 'none';
+}
+function switchFeeTab(t) {
+  document.getElementById('fee-tab-pix').classList.toggle('active', t==='pix');
+  document.getElementById('fee-tab-card').classList.toggle('active', t==='card');
+  document.getElementById('fee-pix-panel').style.display = t==='pix' ? 'block' : 'none';
+  document.getElementById('fee-card-panel').style.display = t==='card' ? 'block' : 'none';
+}
+
+// ── PHOTO CAPTURE (simulated) ──
+const photoEmojis = ['👟','👠','👢','🥿','👞'];
+function capturePhoto(id) {
+  if (id === 'main') {
+    const p = document.getElementById('main-photo');
+    p.innerHTML = `<span style="font-size:64px">${photoEmojis[Math.floor(Math.random()*photoEmojis.length)]}</span><p style="color:rgba(255,255,255,.6)">Foto registrada ✅</p>`;
+    p.style.background = '#1A3A2A';
+  } else {
+    const th = document.getElementById('th'+id);
+    if (th) { th.innerHTML = photoEmojis[id % photoEmojis.length]; th.classList.add('filled'); }
+  }
+  showToast('Foto registrada com sucesso ✅');
+}
+
+// ── LOCKER UNLOCK ──
+function unlockLocker() {
+  const door = document.getElementById('locker-door');
+  const btn = document.getElementById('unlock-btn');
+  const status = document.getElementById('locker-status');
+  btn.textContent = '⏳ Desbloqueando...';
+  btn.disabled = true;
+  setTimeout(() => {
+    door.classList.add('open');
+    status.textContent = '🎉 Locker aberto! Deposite seu calçado.';
+    btn.textContent = '✅ Calçado depositado';
+    btn.disabled = false;
+    btn.onclick = () => go('screen-pickup-code');
+  }, 800);
+}
+
+// ── MAP LOCKER SELECTION ──
+function selectLocker(id) {
+  [1,2,3,4].forEach(i => {
+    const li = document.getElementById('li'+i);
+    if (li) li.classList.toggle('selected', i===id);
+  });
+  showToast(`Locker selecionado`);
+}
+
+// ── MAP FILTERS ──
+function filterLockers(el, type) {
+  document.querySelectorAll('#screen-map .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Filtro aplicado');
+}
+
+// ── HISTORY FILTERS ──
+function filterHistory(el, type) {
+  document.querySelectorAll('#screen-history .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── RATING STARS ──
+function rateStar(n) {
+  document.querySelectorAll('#stars-row .star').forEach((s, i) => {
+    s.classList.toggle('active', i < n);
+  });
+  showToast(n === 5 ? 'Obrigado pela avaliação! 🌟' : `${n} estrelas registradas`);
+}
+
+
+// ══ PROVIDER SCRIPT ══
+
+function goP(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const s=document.getElementById(id);
+  if(s){s.classList.add('active');s.scrollTop=0;}
+}
+
+let toastTimer;
+function showToastP(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2200);
+}
+
+function doProvLogin(){
+  const id=document.getElementById('prov-id').value.trim();
+  const pw=document.getElementById('prov-pass').value.trim();
+  if(!id||!pw){showToastP('Preencha ID e senha');return;}
+  goP('screen-p-dashboard');
+  // animate rings after navigation
+  setTimeout(()=>{
+    animateRing('ring1','ring1-pct',65);
+    animateRing('ring2','ring2-pct',30);
+  },400);
+}
+
+function animateRing(ringId,pctId,target){
+  const ring=document.getElementById(ringId);
+  const pct=document.getElementById(pctId);
+  if(!ring||!pct)return;
+  const circumference=339.3;
+  let current=0;
+  const step=target/40;
+  const timer=setInterval(()=>{
+    current=Math.min(current+step,target);
+    ring.style.strokeDashoffset=circumference-(circumference*current/100);
+    pct.textContent=Math.round(current)+'%';
+    if(current>=target)clearInterval(timer);
+  },25);
+}
+
+function unlockProvLocker(){
+  const door=document.getElementById('p-locker-door');
+  const btn=document.getElementById('p-unlock-btn');
+  const status=document.getElementById('p-locker-status');
+  btn.textContent='⏳ Desbloqueando...';btn.disabled=true;
+  setTimeout(()=>{
+    door.classList.add('open');
+    status.textContent='🎉 Locker aberto! Retire os calçados.';
+    btn.textContent='✅ Calçados retirados';btn.disabled=false;
+    btn.onclick=()=>goP('screen-p-scan-1');
+  },800);
+}
+
+function unlockDepLocker(){
+  const door=document.getElementById('dep-locker-door');
+  const btn=document.getElementById('dep-unlock-btn');
+  const status=document.getElementById('dep-locker-status');
+  btn.textContent='⏳ Desbloqueando...';btn.disabled=true;
+  setTimeout(()=>{
+    door.classList.add('open');
+    status.textContent='📦 Locker aberto! Deposite o calçado.';
+    btn.textContent='✅ Calçado depositado';btn.disabled=false;
+    btn.onclick=()=>goP('screen-p-deposit-confirm');
+  },800);
+}
+
+function simulateScan(boxId,resultId,nextScreen){
+  const box=document.getElementById(boxId);
+  if(box){box.style.background='#0E2A1C';box.innerHTML='<span style="font-size:48px">⏳</span><p style="color:rgba(255,255,255,.6);font-size:14px">Lendo ticket...</p>';}
+  setTimeout(()=>{
+    if(box){box.style.background='#0E3A20';box.innerHTML='<span style="font-size:48px">✅</span><p style="color:rgba(255,255,255,.8);font-size:14px;font-weight:700">Ticket lido com sucesso!</p>';}
+    const res=document.getElementById(resultId);
+    if(res)res.style.display='block';
+    showToastP('Ticket vinculado! PREST-2847 ✅');
+    setTimeout(()=>go(nextScreen),1200);
+  },1400);
+}
+
+function manualLink(inputId,resultId,nextScreen){
+  const val=document.getElementById(inputId)?.value.trim();
+  if(!val){showToastP('Digite o código do ticket');return;}
+  const res=document.getElementById(resultId);
+  if(res)res.style.display='block';
+  showToastP('Ticket '+val+' vinculado! ✅');
+  setTimeout(()=>go(nextScreen),1000);
+}
+
+function toggleCheck(id){
+  const el=document.getElementById(id);
+  if(el)el.classList.toggle('checked');
+}
+
+function captureVerifyPhoto(id){
+  const el=document.getElementById(id);
+  if(el){el.style.background='#0A2A15';el.innerHTML='<span style="font-size:56px">👟</span><p style="color:rgba(255,255,255,.6);font-size:13px">Foto registrada ✅</p>';}
+  showToastP('Foto de verificação registrada ✅');
+}
+
+function captureDepositPhoto(){
+  const el=document.getElementById('deposit-photo');
+  if(el){el.style.background='#0A2A15';el.innerHTML='<span style="font-size:56px">👟</span><p style="color:rgba(255,255,255,.6);font-size:13px">Foto pós-serviço registrada ✅</p>';}
+  showToastP('Foto pós-serviço registrada ✅');
+}
+
+// Animate rings when in-service screen is shown
+const observer=new MutationObserver(()=>{
+  const inservice=document.getElementById('screen-p-inservice');
+  if(inservice&&inservice.classList.contains('active')){
+    setTimeout(()=>{animateRing('ring1','ring1-pct',65);animateRing('ring2','ring2-pct',30);},200);
+  }
+});
+observer.observe(document.getElementById('phone'),{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+
+
+// Provider toast uses separate element
+;(function() {
+  const origP = showToastP;
+  showToastP = function(msg) {
+    const t = document.getElementById('toast-p');
+    if (!t) return;
+    t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(showToastP._timer);
+    showToastP._timer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2200);
+  };
+})();
+</script>
+</body>
+</html>
