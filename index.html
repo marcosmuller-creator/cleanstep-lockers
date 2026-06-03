@@ -5,16 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CLEANSTEP LOCKERS — Protótipo</title>
 <style>
-/* ══ BASE ══ */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;}
+
 #phone{width:390px;height:844px;background:#F4F6FB;border-radius:44px;overflow:hidden;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.45);border:8px solid #111;}
+
+/* All screens: hidden by default, shown when .active */
 .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;background:#F4F6FB;}
 .screen.active{display:flex;}
 .screen::-webkit-scrollbar{width:3px;}
 .screen::-webkit-scrollbar-thumb{background:#E8ECF4;border-radius:4px;}
 
-/* ══ MODULE SELECTOR ══ */
+/* cli/prov screens hidden when wrong module is active */
+#phone.module-client .prov-screen{display:none!important;}
+#phone.module-provider .cli-screen{display:none!important;}
+#phone.module-client .sel-screen,
+#phone.module-provider .sel-screen{display:none!important;}
+
+/* ── SELECTOR ── */
 #screen-selector{background:linear-gradient(160deg,#1B3A6B 0%,#0D2247 60%,#071F17 100%);justify-content:space-between;align-items:center;}
 .sel-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px 16px;width:100%;}
 .sel-logo{width:96px;height:96px;background:rgba(255,255,255,.1);border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:20px;border:2px solid rgba(255,255,255,.2);}
@@ -24,8 +32,8 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 .module-cards{display:flex;flex-direction:column;gap:12px;padding:0 28px 12px;width:100%;}
 .module-card{border-radius:18px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
 .module-card:active{transform:scale(.97);}
-.module-card.client{background:linear-gradient(135deg,#FF6B2B,#FF8C42);box-shadow:0 6px 24px rgba(255,107,43,.4);}
-.module-card.provider{background:linear-gradient(135deg,#0E4D3A,#16704F);box-shadow:0 6px 24px rgba(14,77,58,.4);}
+.module-card.client-card{background:linear-gradient(135deg,#FF6B2B,#FF8C42);box-shadow:0 6px 24px rgba(255,107,43,.4);}
+.module-card.provider-card{background:linear-gradient(135deg,#0E4D3A,#16704F);box-shadow:0 6px 24px rgba(14,77,58,.4);}
 .mc-icon{width:56px;height:56px;background:rgba(255,255,255,.18);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
 .mc-text h3{font-size:17px;font-weight:800;color:#fff;}
 .mc-text p{font-size:12px;color:rgba(255,255,255,.75);margin-top:3px;}
@@ -33,11 +41,13 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 .sel-footer{padding:16px 28px 24px;text-align:center;}
 .sel-footer span{font-size:11px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.5px;}
 .sel-footer strong{color:rgba(255,255,255,.55);}
-.module-wrap{position:absolute;inset:0;display:none;flex-direction:column;}
-.module-wrap.active{display:flex;}
-#back-to-selector{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:9999;display:none;}
-.back-module-btn{background:rgba(26,26,46,.88);color:#fff;border:none;border-radius:12px 12px 0 0;padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);letter-spacing:.3px;}
-/* ══ CLIENT STYLES ══ */
+
+/* back button strip */
+.back-strip{position:absolute;bottom:0;left:0;right:0;z-index:999;display:none;background:rgba(26,26,46,.88);padding:10px 20px 16px;text-align:center;backdrop-filter:blur(8px);}
+.back-strip button{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8);border-radius:8px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer;}
+#phone.module-client .back-strip,
+#phone.module-provider .back-strip{display:block;}
+
 
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -260,7 +270,6 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
   .fade-in { animation:fadeIn .3s ease both; }
   @keyframes spin { to{transform:rotate(360deg)} }
 
-/* ══ PROVIDER STYLES ══ */
 
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   :root{
@@ -413,15 +422,15 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 <body>
 <div id="phone">
 
-<!-- ════════════════ MODULE SELECTOR ════════════════ -->
-<div id="screen-selector" class="screen active">
+<!-- ═══════ SELECTOR ═══════ -->
+<div id="screen-selector" class="screen sel-screen active">
   <div class="sel-top">
     <div class="sel-logo">👟</div>
     <h1>CLEANSTEP<br><span>LOCKERS</span></h1>
     <p>Selecione o módulo para iniciar a demonstração</p>
   </div>
   <div class="module-cards">
-    <div class="module-card client" onclick="openModule('client')">
+    <div class="module-card client-card" onclick="openModule('client')">
       <div class="mc-icon">📱</div>
       <div class="mc-text">
         <h3>Módulo Cliente</h3>
@@ -429,7 +438,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
       </div>
       <div class="mc-arrow">›</div>
     </div>
-    <div class="module-card provider" onclick="openModule('provider')">
+    <div class="module-card provider-card" onclick="openModule('provider')">
       <div class="mc-icon">🛠️</div>
       <div class="mc-text">
         <h3>Módulo Prestador</h3>
@@ -443,8 +452,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
   </div>
 </div>
 
-<!-- ════════════════ CLIENT MODULE ════════════════ -->
-<div id="module-client" class="module-wrap">
+<!-- ═══════ CLIENT SCREENS ═══════ -->
 <!-- ══════════════════════════════ SPLASH ══════════════════════════════ -->
 <div id="screen-splash" class="screen active">
   <div class="splash-top">
@@ -467,7 +475,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ LOGIN ══════════════════════════════ -->
-<div id="screen-login" class="screen">
+<div id="screen-login" class="screen cli-screen">
   <div class="login-header">
     <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="go('screen-splash')">←</button>
     <h2>Bem-vindo de volta</h2>
@@ -503,7 +511,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ FORGOT ══════════════════════════════ -->
-<div id="screen-forgot" class="screen">
+<div id="screen-forgot" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-login')">←</button>
     <h2>Recuperar senha</h2>
@@ -524,7 +532,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ REGISTER ══════════════════════════════ -->
-<div id="screen-register" class="screen">
+<div id="screen-register" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-splash')">←</button>
     <h2>Criar conta</h2>
@@ -557,7 +565,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ HOME ══════════════════════════════ -->
-<div id="screen-home" class="screen">
+<div id="screen-home" class="screen cli-screen">
   <div class="home-header">
     <div class="home-header-top">
       <div>
@@ -635,7 +643,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ MAP ══════════════════════════════ -->
-<div id="screen-map" class="screen">
+<div id="screen-map" class="screen cli-screen">
   <div style="position:relative">
     <div class="map-container">
       <svg class="map-svg" viewBox="0 0 390 340" xmlns="http://www.w3.org/2000/svg">
@@ -741,7 +749,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ PAYMENT ══════════════════════════════ -->
-<div id="screen-payment" class="screen">
+<div id="screen-payment" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-map')">←</button>
     <h2>Pagamento</h2>
@@ -809,7 +817,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ PHOTO ══════════════════════════════ -->
-<div id="screen-photo" class="screen">
+<div id="screen-photo" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-payment')">←</button>
     <h2>Fotografar calçado</h2>
@@ -843,7 +851,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ LOCKER OPEN ══════════════════════════════ -->
-<div id="screen-locker" class="screen">
+<div id="screen-locker" class="screen cli-screen">
   <div style="background:linear-gradient(160deg,var(--primary),#0D2247);flex:1;display:flex;flex-direction:column;padding:52px 24px 32px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
       <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff;flex-shrink:0" onclick="go('screen-photo')">←</button>
@@ -880,7 +888,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ PICKUP CODE ══════════════════════════════ -->
-<div id="screen-pickup-code" class="screen">
+<div id="screen-pickup-code" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-home')">✕</button>
     <h2>Código de Retirada</h2>
@@ -927,7 +935,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ PICKUP ══════════════════════════════ -->
-<div id="screen-pickup" class="screen">
+<div id="screen-pickup" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-home')">←</button>
     <h2>Retirar Calçado</h2>
@@ -986,7 +994,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ OVERDUE FEE ══════════════════════════════ -->
-<div id="screen-fee" class="screen">
+<div id="screen-fee" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-pickup')">←</button>
     <h2>Taxa de Permanência</h2>
@@ -1040,7 +1048,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ RATING ══════════════════════════════ -->
-<div id="screen-rating" class="screen">
+<div id="screen-rating" class="screen cli-screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
     <div style="font-size:64px;margin-bottom:16px;animation:pulse 1s infinite">🎉</div>
     <h2 style="font-size:24px;font-weight:800;color:var(--text)">Retirada confirmada!</h2>
@@ -1069,7 +1077,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ HISTORY ══════════════════════════════ -->
-<div id="screen-history" class="screen">
+<div id="screen-history" class="screen cli-screen">
   <div class="topbar" style="padding-top:52px">
     <h2 style="flex:1">Histórico</h2>
   </div>
@@ -1133,7 +1141,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ ORDER DETAIL — DONE ══════════════════════════════ -->
-<div id="screen-order-done" class="screen">
+<div id="screen-order-done" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-history')">←</button>
     <h2>Pedido #2847</h2>
@@ -1172,7 +1180,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ ORDER DETAIL — ACTIVE ══════════════════════════════ -->
-<div id="screen-order-active" class="screen">
+<div id="screen-order-active" class="screen cli-screen">
   <div class="topbar">
     <button class="back-btn" onclick="go('screen-history')">←</button>
     <h2>Pedido #3104</h2>
@@ -1212,7 +1220,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ PROFILE ══════════════════════════════ -->
-<div id="screen-profile" class="screen">
+<div id="screen-profile" class="screen cli-screen">
   <div class="profile-header">
     <div class="avatar-circle">CS</div>
     <h2 style="font-size:20px;font-weight:800">Carlos Silva</h2>
@@ -1259,13 +1267,8 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ══════════════════════════════ TOAST ══════════════════════════════ -->
-<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
-<!-- shared toast -->
-<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
-</div>
 
-<!-- ════════════════ PROVIDER MODULE ════════════════ -->
-<div id="module-provider" class="module-wrap">
+<!-- ═══════ PROVIDER SCREENS ═══════ -->
 <!-- ═══════════════════════ SPLASH PRESTADOR ═══════════════════════ -->
 <div id="screen-p-splash" class="screen active">
   <div class="p-splash-top">
@@ -1284,7 +1287,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ LOGIN PRESTADOR ═══════════════════════ -->
-<div id="screen-p-login" class="screen">
+<div id="screen-p-login" class="screen prov-screen">
   <div class="prov-header">
     <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-splash')">←</button>
     <h2>Acesso do Prestador</h2>
@@ -1310,7 +1313,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
-<div id="screen-p-dashboard" class="screen">
+<div id="screen-p-dashboard" class="screen prov-screen">
   <div class="dash-header">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div>
@@ -1409,7 +1412,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ ROTAS DE COLETA ═══════════════════════ -->
-<div id="screen-p-route" class="screen">
+<div id="screen-p-route" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-dashboard')">←</button>
     <h2>Rotas de Coleta</h2>
@@ -1513,7 +1516,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ COLETA DETALHE — LOCKER A-03 ═══════════════════════ -->
-<div id="screen-p-collect-1" class="screen">
+<div id="screen-p-collect-1" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-route')">←</button>
     <h2>Coleta · Locker A-03</h2>
@@ -1590,7 +1593,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ COLETA DETALHE — LOCKER B-07 ═══════════════════════ -->
-<div id="screen-p-collect-2" class="screen">
+<div id="screen-p-collect-2" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-route')">←</button>
     <h2>Coleta · Locker B-07</h2>
@@ -1636,7 +1639,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ ABERTURA LOCKER (COLETA) ═══════════════════════ -->
-<div id="screen-p-locker-open-collect" class="screen">
+<div id="screen-p-locker-open-collect" class="screen prov-screen">
   <div class="p-locker-body">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
       <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-collect-1')">←</button>
@@ -1669,7 +1672,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ SCAN TICKET #CS-7429 ═══════════════════════ -->
-<div id="screen-p-scan-1" class="screen">
+<div id="screen-p-scan-1" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-collect-1')">←</button>
     <h2>Vincular Ticket</h2>
@@ -1735,7 +1738,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ SCAN TICKET #CS-7430 ═══════════════════════ -->
-<div id="screen-p-scan-2" class="screen">
+<div id="screen-p-scan-2" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-collect-1')">←</button>
     <h2>Vincular Ticket</h2>
@@ -1784,7 +1787,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ VERIFICAÇÃO CALÇADO — #7429 ═══════════════════════ -->
-<div id="screen-p-verify-1" class="screen">
+<div id="screen-p-verify-1" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-scan-1')">←</button>
     <h2>Verificar Calçado</h2>
@@ -1819,7 +1822,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ VERIFICAÇÃO CALÇADO — #7430 ═══════════════════════ -->
-<div id="screen-p-verify-2" class="screen">
+<div id="screen-p-verify-2" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-scan-2')">←</button>
     <h2>Verificar Calçado</h2>
@@ -1843,7 +1846,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ EM SERVIÇO ═══════════════════════ -->
-<div id="screen-p-inservice" class="screen">
+<div id="screen-p-inservice" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-dashboard')">←</button>
     <h2>Em Serviço</h2>
@@ -1941,7 +1944,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ SELEÇÃO DEVOLUÇÃO ═══════════════════════ -->
-<div id="screen-p-deposit-select" class="screen">
+<div id="screen-p-deposit-select" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-inservice')">←</button>
     <h2>Devolver ao Locker</h2>
@@ -1985,7 +1988,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ DEPÓSITO — DEVOLUÇÃO ═══════════════════════ -->
-<div id="screen-p-deposit-1" class="screen">
+<div id="screen-p-deposit-1" class="screen prov-screen">
   <div class="topbar">
     <button class="back-btn" onclick="goP('screen-p-deposit-select')">←</button>
     <h2>Depositar Calçado</h2>
@@ -2036,7 +2039,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ ABERTURA LOCKER (DEPÓSITO) ═══════════════════════ -->
-<div id="screen-p-locker-deposit" class="screen">
+<div id="screen-p-locker-deposit" class="screen prov-screen">
   <div class="p-locker-body">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
       <button class="back-btn" style="background:rgba(255,255,255,.15);color:#fff" onclick="goP('screen-p-deposit-1')">←</button>
@@ -2073,7 +2076,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ CONFIRMAÇÃO DEPÓSITO ═══════════════════════ -->
-<div id="screen-p-deposit-confirm" class="screen">
+<div id="screen-p-deposit-confirm" class="screen prov-screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center">
     <div style="font-size:64px;margin-bottom:16px;animation:pulse 1s infinite">🎉</div>
     <h2 style="font-size:24px;font-weight:800;color:var(--text)">Depósito confirmado!</h2>
@@ -2099,7 +2102,7 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
 </div>
 
 <!-- ═══════════════════════ HISTÓRICO DO PRESTADOR ═══════════════════════ -->
-<div id="screen-p-history" class="screen">
+<div id="screen-p-history" class="screen prov-screen">
   <div class="topbar">
     <h2 style="flex:1">Meu Histórico</h2>
   </div>
@@ -2157,42 +2160,60 @@ body{background:#1B3A6B;display:flex;flex-direction:column;justify-content:cente
   </div>
 </div>
 
-<!-- ══════ TOAST ══════ -->
-<div id="toast" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
-<div id="toast-p" style="position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(14,77,58,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:100;pointer-events:none;backdrop-filter:blur(8px)"></div>
-</div>
 
-<!-- back button -->
-<div id="back-to-selector">
-  <button class="back-module-btn" onclick="closeModule()">⬅ Trocar módulo</button>
+<!-- ═══════ TOAST ═══════ -->
+<div id="toast" style="position:absolute;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(26,26,46,.92);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:all .3s;z-index:200;pointer-events:none;backdrop-filter:blur(8px)"></div>
+
+<!-- ═══════ BACK STRIP ═══════ -->
+<div class="back-strip">
+  <button onclick="closeModule()">⬅ Trocar módulo</button>
 </div>
 
 </div><!-- end phone -->
-
 <script>
-// ══ MODULE SWITCHER ══
-let activeModule = null;
+const phone = document.getElementById('phone');
+
+// ── MODULE SWITCHER ──
 function openModule(mod) {
-  document.getElementById('screen-selector').classList.remove('active');
-  document.querySelectorAll('.module-wrap').forEach(w => w.classList.remove('active'));
-  const wrap = document.getElementById('module-' + mod);
-  wrap.classList.add('active');
-  activeModule = mod;
-  document.getElementById('back-to-selector').style.display = 'block';
+  phone.className = 'module-' + mod;
   if (mod === 'client') {
     go('screen-splash');
   } else {
     goP('screen-p-splash');
   }
 }
+
 function closeModule() {
-  document.querySelectorAll('.module-wrap').forEach(w => w.classList.remove('active'));
+  phone.className = '';
+  // hide all non-selector screens, show selector
+  document.querySelectorAll('.cli-screen,.prov-screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-selector').classList.add('active');
-  document.getElementById('back-to-selector').style.display = 'none';
-  activeModule = null;
 }
 
-// ══ CLIENT SCRIPT ══
+// ── CLIENT NAV ──
+function go(id) {
+  document.querySelectorAll('.cli-screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+}
+
+// ── PROVIDER NAV ──
+function goP(id) {
+  document.querySelectorAll('.prov-screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+}
+
+// ── SHARED TOAST ──
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2200);
+}
+function showToastP(msg) { showToast(msg); }
+
 
 // ── NAVIGATION ──
 function go(id) {
@@ -2315,8 +2336,6 @@ function rateStar(n) {
 }
 
 
-// ══ PROVIDER SCRIPT ══
-
 function goP(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const s=document.getElementById(id);
@@ -2336,113 +2355,27 @@ function doProvLogin(){
   const pw=document.getElementById('prov-pass').value.trim();
   if(!id||!pw){showToastP('Preencha ID e senha');return;}
   goP('screen-p-dashboard');
-  // animate rings after navigation
-  setTimeout(()=>{
-    animateRing('ring1','ring1-pct',65);
-    animateRing('ring2','ring2-pct',30);
-  },400);
-}
-
-function animateRing(ringId,pctId,target){
-  const ring=document.getElementById(ringId);
-  const pct=document.getElementById(pctId);
-  if(!ring||!pct)return;
-  const circumference=339.3;
-  let current=0;
-  const step=target/40;
-  const timer=setInterval(()=>{
-    current=Math.min(current+step,target);
-    ring.style.strokeDashoffset=circumference-(circumference*current/100);
-    pct.textContent=Math.round(current)+'%';
-    if(current>=target)clearInterval(timer);
-  },25);
-}
-
-function unlockProvLocker(){
-  const door=document.getElementById('p-locker-door');
-  const btn=document.getElementById('p-unlock-btn');
-  const status=document.getElementById('p-locker-status');
-  btn.textContent='⏳ Desbloqueando...';btn.disabled=true;
-  setTimeout(()=>{
-    door.classList.add('open');
-    status.textContent='🎉 Locker aberto! Retire os calçados.';
-    btn.textContent='✅ Calçados retirados';btn.disabled=false;
-    btn.onclick=()=>goP('screen-p-scan-1');
-  },800);
-}
-
-function unlockDepLocker(){
-  const door=document.getElementById('dep-locker-door');
-  const btn=document.getElementById('dep-unlock-btn');
-  const status=document.getElementById('dep-locker-status');
-  btn.textContent='⏳ Desbloqueando...';btn.disabled=true;
-  setTimeout(()=>{
-    door.classList.add('open');
-    status.textContent='📦 Locker aberto! Deposite o calçado.';
-    btn.textContent='✅ Calçado depositado';btn.disabled=false;
-    btn.onclick=()=>goP('screen-p-deposit-confirm');
-  },800);
-}
-
-function simulateScan(boxId,resultId,nextScreen){
-  const box=document.getElementById(boxId);
-  if(box){box.style.background='#0E2A1C';box.innerHTML='<span style="font-size:48px">⏳</span><p style="color:rgba(255,255,255,.6);font-size:14px">Lendo ticket...</p>';}
-  setTimeout(()=>{
-    if(box){box.style.background='#0E3A20';box.innerHTML='<span style="font-size:48px">✅</span><p style="color:rgba(255,255,255,.8);font-size:14px;font-weight:700">Ticket lido com sucesso!</p>';}
-    const res=document.getElementById(resultId);
-    if(res)res.style.display='block';
-    showToastP('Ticket vinculado! PREST-2847 ✅');
-    setTimeout(()=>go(nextScreen),1200);
-  },1400);
-}
-
-function manualLink(inputId,resultId,nextScreen){
-  const val=document.getElementById(inputId)?.value.trim();
-  if(!val){showToastP('Digite o código do ticket');return;}
-  const res=document.getElementById(resultId);
-  if(res)res.style.display='block';
-  showToastP('Ticket '+val+' vinculado! ✅');
-  setTimeout(()=>go(nextScreen),1000);
-}
-
-function toggleCheck(id){
-  const el=document.getElementById(id);
-  if(el)el.classList.toggle('checked');
-}
-
-function captureVerifyPhoto(id){
-  const el=document.getElementById(id);
-  if(el){el.style.background='#0A2A15';el.innerHTML='<span style="font-size:56px">👟</span><p style="color:rgba(255,255,255,.6);font-size:13px">Foto registrada ✅</p>';}
-  showToastP('Foto de verificação registrada ✅');
-}
-
-function captureDepositPhoto(){
-  const el=document.getElementById('deposit-photo');
-  if(el){el.style.background='#0A2A15';el.innerHTML='<span style="font-size:56px">👟</span><p style="color:rgba(255,255,255,.6);font-size:13px">Foto pós-serviço registrada ✅</p>';}
-  showToastP('Foto pós-serviço registrada ✅');
-}
-
-// Animate rings when in-service screen is shown
-const observer=new MutationObserver(()=>{
-  const inservice=document.getElementById('screen-p-inservice');
-  if(inservice&&inservice.classList.contains('active')){
-    setTimeout(()=>{animateRing('ring1','ring1-pct',65);animateRing('ring2','ring2-pct',30);},200);
-  }
-});
-observer.observe(document.getElementById('phone'),{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  
 
 
-// Provider toast uses separate element
-;(function() {
-  const origP = showToastP;
-  showToastP = function(msg) {
-    const t = document.getElementById('toast-p');
-    if (!t) return;
-    t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
-    clearTimeout(showToastP._timer);
-    showToastP._timer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2200);
-  };
-})();
+// ── CORRECTED NAV (overrides individual module versions) ──
+go = function(id) {
+  document.querySelectorAll('.cli-screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+};
+goP = function(id) {
+  document.querySelectorAll('.prov-screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+};
+showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2200);
+};
+showToastP = showToast;
 </script>
 </body>
 </html>
